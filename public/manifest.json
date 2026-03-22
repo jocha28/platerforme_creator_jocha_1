@@ -1,0 +1,43 @@
+{
+  "name": "Jocha Official",
+  "short_name": "Jocha",
+  "description": "Plateforme musicale officielle de Jocha",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0D0A",
+  "theme_color": "#E8B800",
+  "orientation": "portrait-primary",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Accueil",
+      "url": "/",
+      "description": "Page d'accueil"
+    },
+    {
+      "name": "Bibliothèque",
+      "url": "/library",
+      "description": "Mes playlists"
+    },
+    {
+      "name": "Profil Artiste",
+      "url": "/profile",
+      "description": "Page artiste"
+    }
+  ]
+}

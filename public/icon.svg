@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="#0F0D0A"/>
+
+  <!-- Ears / Tufts -->
+  <polygon points="155,185 130,95 195,155" fill="#C49A00"/>
+  <polygon points="357,185 382,95 317,155" fill="#C49A00"/>
+
+  <!-- Body -->
+  <ellipse cx="256" cy="310" rx="120" ry="145" fill="#1A1400"/>
+  <ellipse cx="256" cy="310" rx="105" ry="130" fill="#221B00"/>
+
+  <!-- Facial disc -->
+  <ellipse cx="256" cy="255" rx="115" ry="108" fill="#1E1800"/>
+  <ellipse cx="256" cy="258" rx="100" ry="94" fill="#2A2000"/>
+
+  <!-- Eyes background -->
+  <circle cx="205" cy="240" r="52" fill="#0A0800"/>
+  <circle cx="307" cy="240" r="52" fill="#0A0800"/>
+
+  <!-- Eye gold ring -->
+  <circle cx="205" cy="240" r="48" fill="#E8B800"/>
+  <circle cx="307" cy="240" r="48" fill="#E8B800"/>
+
+  <!-- Eye inner -->
+  <circle cx="205" cy="240" r="34" fill="#1A1000"/>
+  <circle cx="307" cy="240" r="34" fill="#1A1000"/>
+
+  <!-- Pupils -->
+  <circle cx="205" cy="240" r="22" fill="#050400"/>
+  <circle cx="307" cy="240" r="22" fill="#050400"/>
+
+  <!-- Eye shine 1 -->
+  <circle cx="195" cy="228" r="8" fill="white" opacity="0.9"/>
+  <circle cx="307" cy="250" r="4" fill="white" opacity="0.5"/>
+  <circle cx="218" cy="255" r="4" fill="white" opacity="0.4"/>
+
+  <!-- Eye shine 2 -->
+  <circle cx="297" cy="228" r="8" fill="white" opacity="0.9"/>
+  <circle cx="320" cy="252" r="4" fill="white" opacity="0.4"/>
+
+  <!-- Beak -->
+  <polygon points="256,265 234,290 278,290" fill="#C49A00"/>
+  <polygon points="256,272 244,286 268,286" fill="#A07800"/>
+
+  <!-- Feather lines body -->
+  <path d="M175 290 Q220 270 256 275 Q292 270 337 290" stroke="#E8B800" stroke-width="1.5" opacity="0.3" fill="none"/>
+  <path d="M168 315 Q220 295 256 300 Q292 295 344 315" stroke="#E8B800" stroke-width="1.5" opacity="0.3" fill="none"/>
+  <path d="M165 340 Q220 318 256 324 Q292 318 347 340" stroke="#E8B800" stroke-width="1.5" opacity="0.25" fill="none"/>
+  <path d="M168 365 Q220 342 256 348 Q292 342 344 365" stroke="#E8B800" stroke-width="1.5" opacity="0.2" fill="none"/>
+
+  <!-- Wings -->
+  <path d="M145 295 Q90 340 100 410 Q155 375 175 340" fill="#1A1400" stroke="#E8B800" stroke-width="1" opacity="0.6"/>
+  <path d="M367 295 Q422 340 412 410 Q357 375 337 340" fill="#1A1400" stroke="#E8B800" stroke-width="1" opacity="0.6"/>
+
+  <!-- Feet / Branch -->
+  <rect x="120" y="440" width="272" height="12" rx="6" fill="#5C4A1E"/>
+  <!-- Left foot -->
+  <line x1="215" y1="440" x2="195" y2="460" stroke="#C49A00" stroke-width="5" stroke-linecap="round"/>
+  <line x1="215" y1="440" x2="215" y2="465" stroke="#C49A00" stroke-width="5" stroke-linecap="round"/>
+  <line x1="215" y1="440" x2="235" y2="460" stroke="#C49A00" stroke-width="5" stroke-linecap="round"/>
+  <!-- Right foot -->
+  <line x1="297" y1="440" x2="277" y2="460" stroke="#C49A00" stroke-width="5" stroke-linecap="round"/>
+  <line x1="297" y1="440" x2="297" y2="465" stroke="#C49A00" stroke-width="5" stroke-linecap="round"/>
+  <line x1="297" y1="440" x2="317" y2="460" stroke="#C49A00" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Eyebrow arches (subtle) -->
+  <path d="M165 200 Q205 185 245 198" stroke="#E8B800" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M267 198 Q307 185 347 200" stroke="#E8B800" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+</svg>
