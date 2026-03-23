@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createReadStream, statSync, existsSync } from 'fs'
+import { createReadStream, statSync, existsSync, readFileSync } from 'fs'
 import { join, extname } from 'path'
 
 export const runtime = 'nodejs'
@@ -11,6 +11,15 @@ const MIME: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.webp': 'image/webp',
+}
+
+// Détecte le vrai format depuis les magic bytes (PNG sauvegardé en .jpg)
+function detectMime(filePath: string, fallback: string): string {
+  const buf = readFileSync(filePath, { flag: 'r' }).slice(0, 8)
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png'
+  if (buf[0] === 0xff && buf[1] === 0xd8) return 'image/jpeg'
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[6] === 0x57 && buf[7] === 0x45) return 'image/webp'
+  return fallback
 }
 
 export async function GET(
@@ -31,7 +40,9 @@ export async function GET(
   }
 
   const stat = statSync(filePath)
-  const mime = MIME[extname(filename).toLowerCase()] ?? 'image/jpeg'
+  const fallbackMime = MIME[extname(filename).toLowerCase()] ?? 'image/jpeg'
+  const mime = detectMime(filePath, fallbackMime)
+  const etag = `"${stat.size}-${stat.mtimeMs.toFixed(0)}"`
 
   const nodeStream = createReadStream(filePath)
   const webStream = new ReadableStream({
@@ -47,7 +58,9 @@ export async function GET(
     headers: {
       'Content-Type': mime,
       'Content-Length': String(stat.size),
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'ETag': etag,
+      'Last-Modified': stat.mtime.toUTCString(),
+      'Cache-Control': 'public, max-age=86400, must-revalidate',
     },
   })
 }
