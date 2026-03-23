@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jocha Official — Hors ligne</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0F0D0A;
+      color: #F5F0E8;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 24px;
+      text-align: center;
+      padding: 32px;
+    }
+    h1 { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; }
+    p { color: #888; font-size: 0.9rem; max-width: 320px; line-height: 1.6; }
+    button {
+      padding: 12px 32px;
+      background: #E8B800;
+      color: #0F0D0A;
+      border: none;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <h1>CONNEXION REQUISE</h1>
+  <p>Jocha Official nécessite une connexion internet pour streamer la musique.</p>
+  <button onclick="window.location.reload()">Réessayer</button>
+</body>
+</html>

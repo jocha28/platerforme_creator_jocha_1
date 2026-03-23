@@ -1,43 +1,67 @@
 {
   "name": "Jocha Official",
   "short_name": "Jocha",
-  "description": "Plateforme musicale officielle de Jocha",
+  "description": "Plateforme musicale officielle de Jocha — rap français, conscious hip-hop, drill",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F0D0A",
   "theme_color": "#E8B800",
   "orientation": "portrait-primary",
+  "lang": "fr",
   "categories": ["music", "entertainment"],
   "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
     }
   ],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Jocha Official"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Accueil",
       "url": "/",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }],
       "description": "Page d'accueil"
+    },
+    {
+      "name": "Discographie",
+      "url": "/discography",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }],
+      "description": "Tous les projets"
     },
     {
       "name": "Bibliothèque",
       "url": "/library",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }],
       "description": "Mes playlists"
-    },
-    {
-      "name": "Profil Artiste",
-      "url": "/profile",
-      "description": "Page artiste"
     }
   ]
 }

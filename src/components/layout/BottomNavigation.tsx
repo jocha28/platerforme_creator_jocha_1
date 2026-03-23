@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { label: 'Library', icon: 'album', href: '/library' },
   { label: 'Search', icon: 'search', href: '/search' },
   { label: 'Profile', icon: 'person', href: '/profile' },
+  { label: 'App', icon: 'download', href: '/download' },
 ]
 
 export default function BottomNavigation() {

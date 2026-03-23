@@ -60,8 +60,27 @@ export default function SideNavigation() {
       </nav>
 
       {/* Bottom section */}
-      <div className="px-6 py-6 border-t border-outline-variant/10">
-        <p className="font-label text-[10px] text-on-surface-variant/40 uppercase tracking-widest">
+      <div className="px-3 py-4 border-t border-outline-variant/10 space-y-1">
+        <Link
+          href="/download"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all',
+            pathname === '/download'
+              ? 'bg-primary/10 text-primary border-l-4 border-primary pl-2'
+              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-l-4 border-transparent pl-2'
+          )}
+        >
+          <span
+            className="material-symbols-outlined text-[22px]"
+            style={pathname === '/download' ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
+          >
+            download
+          </span>
+          <span className="font-label text-sm font-semibold uppercase tracking-wider">
+            Download
+          </span>
+        </Link>
+        <p className="font-label text-[10px] text-on-surface-variant/40 uppercase tracking-widest px-3 pt-2">
           © 2026 Sonic Gallery
         </p>
       </div>

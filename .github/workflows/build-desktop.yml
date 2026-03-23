@@ -1,0 +1,125 @@
+name: Build Desktop Apps
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (ex: 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: electron-app
+        run: npm install
+
+      - name: Build Linux (AppImage + deb)
+        working-directory: electron-app
+        run: npm run build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-builds
+          path: |
+            electron-app/dist/*.AppImage
+            electron-app/dist/*.deb
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: electron-app
+        run: npm install
+
+      - name: Build Windows (NSIS installer)
+        working-directory: electron-app
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-builds
+          path: electron-app/dist/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: electron-app
+        run: npm install
+
+      - name: Build macOS (DMG)
+        working-directory: electron-app
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-builds
+          path: electron-app/dist/*.dmg
+
+  release:
+    needs: [build-linux, build-windows, build-mac]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/linux-builds/*.AppImage
+            artifacts/linux-builds/*.deb
+            artifacts/windows-builds/*.exe
+            artifacts/mac-builds/*.dmg
+          body: |
+            ## Jocha Official — ${{ github.ref_name }}
+
+            ### Télécharger
+            | Plateforme | Fichier |
+            |---|---|
+            | Windows | `.exe` (installateur) |
+            | macOS | `.dmg` |
+            | Linux | `.AppImage` ou `.deb` |
+
+            ### Installation mobile (PWA)
+            Ouvre **jocha-music.fly.dev** dans ton navigateur et installe l'app :
+            - **Android** : Menu Chrome → *Ajouter à l'écran d'accueil*
+            - **iPhone** : Partage Safari → *Sur l'écran d'accueil*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
