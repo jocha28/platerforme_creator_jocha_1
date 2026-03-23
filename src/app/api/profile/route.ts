@@ -3,6 +3,7 @@ import { readStore, writeStore } from '@/lib/server-store'
 import { ArtistProfile } from '@/types'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const DEFAULT_PROFILE: ArtistProfile = {
   name: 'Jocha',

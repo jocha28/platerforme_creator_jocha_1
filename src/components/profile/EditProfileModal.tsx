@@ -15,6 +15,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
 
   const [form, setForm] = useState<ArtistProfile>(profile)
   const [genreInput, setGenreInput] = useState('')
+  const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -36,25 +37,34 @@ export default function EditProfileModal({ open, onClose }: Props) {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
-  function readImageFile(file: File, onResult: (dataUrl: string) => void) {
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const result = ev.target?.result
-      if (typeof result === 'string') onResult(result)
+  async function uploadImage(file: File, field: 'avatar' | 'coverPhoto'): Promise<string | null> {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('field', field)
+    try {
+      const res = await fetch('/api/profile/upload', { method: 'POST', body: fd })
+      if (!res.ok) return null
+      const { url } = await res.json()
+      return url as string
+    } catch {
+      return null
     }
-    reader.readAsDataURL(file)
   }
 
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) readImageFile(file, (url) => set('avatar', url))
+    if (!file) return
     e.target.value = ''
+    const url = await uploadImage(file, 'avatar')
+    if (url) set('avatar', url)
   }
 
-  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) readImageFile(file, (url) => set('coverPhoto', url))
+    if (!file) return
     e.target.value = ''
+    const url = await uploadImage(file, 'coverPhoto')
+    if (url) set('coverPhoto', url)
   }
 
   function addGenre() {
@@ -76,8 +86,10 @@ export default function EditProfileModal({ open, onClose }: Props) {
     }
   }
 
-  function handleSave() {
-    updateProfile(form)
+  async function handleSave() {
+    setSaving(true)
+    await updateProfile(form)
+    setSaving(false)
     onClose()
   }
 
@@ -283,9 +295,10 @@ export default function EditProfileModal({ open, onClose }: Props) {
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 py-3 rounded-full bg-primary text-on-primary font-label text-sm font-bold uppercase tracking-widest hover:brightness-110 transition-all active:scale-95"
+            disabled={saving}
+            className="flex-1 py-3 rounded-full bg-primary text-on-primary font-label text-sm font-bold uppercase tracking-widest hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
-            Enregistrer
+            {saving ? 'Sauvegarde…' : 'Enregistrer'}
           </button>
         </div>
       </div>

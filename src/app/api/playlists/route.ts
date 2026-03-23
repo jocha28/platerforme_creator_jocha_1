@@ -4,6 +4,7 @@ import { Playlist } from '@/types'
 import { JOCHA_TRACKS } from '@/data/tracks'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const SINGLE_IDS = JOCHA_TRACKS.filter((t) => t.albumId === 'singles').map((t) => t.id)
 

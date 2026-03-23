@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { readStore, writeStore } from '@/lib/server-store'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export function GET() {
   const counts = readStore<Record<string, number>>('play-counts.json', {})

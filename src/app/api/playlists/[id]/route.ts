@@ -3,6 +3,7 @@ import { readStore, writeStore } from '@/lib/server-store'
 import { Playlist } from '@/types'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 function getPlaylists(): Playlist[] {
   return readStore<Playlist[]>('playlists.json', [])

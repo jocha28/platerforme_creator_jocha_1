@@ -1,6 +1,5 @@
 #!/bin/bash
 # Upload MP3s et covers vers jocha-music.fly.dev via l'API admin
-set -e
 
 BASE_URL="https://jocha-music.fly.dev"
 PASSWORD="${1:-JochaAdmin2026!}"
@@ -39,7 +38,7 @@ upload_batch() {
   for f in "${files[@]}"; do
     args+=(-F "files=@${f}")
   done
-  curl -s -b "$COOKIE_FILE" -X POST "$endpoint" "${args[@]}"
+  curl -s --retry 3 --retry-delay 5 --max-time 120 -b "$COOKIE_FILE" -X POST "$endpoint" "${args[@]}" || echo '{"results":[]}'
 }
 
 # Fonction d'upload covers
@@ -56,11 +55,20 @@ echo -e "\n${YELLOW}→ Upload des MP3 (134 fichiers, ~1GB)...${NC}"
 TOTAL_MP3=$(ls "$AUDIO_DIR"/*.mp3 | wc -l)
 DONE=0
 FAILED=0
-BATCH_SIZE=3
+BATCH_SIZE=1
+PROGRESS_FILE="/tmp/jocha_upload_progress.txt"
+
+# Reprendre depuis la dernière position si le fichier existe
+START_INDEX=0
+if [ -f "$PROGRESS_FILE" ]; then
+  START_INDEX=$(cat "$PROGRESS_FILE")
+  DONE=$START_INDEX
+  echo -e "${YELLOW}→ Reprise depuis le fichier ${START_INDEX}/${TOTAL_MP3}${NC}"
+fi
 
 mapfile -t ALL_MP3 < <(ls "$AUDIO_DIR"/*.mp3)
 
-for ((i=0; i<${#ALL_MP3[@]}; i+=BATCH_SIZE)); do
+for ((i=START_INDEX; i<${#ALL_MP3[@]}; i+=BATCH_SIZE)); do
   BATCH=("${ALL_MP3[@]:$i:$BATCH_SIZE}")
   NAMES=""
   for f in "${BATCH[@]}"; do NAMES+=" $(basename "$f")"; done
@@ -69,6 +77,7 @@ for ((i=0; i<${#ALL_MP3[@]}; i+=BATCH_SIZE)); do
   OK=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(sum(1 for r in d.get('results',[]) if r.get('ok')))" 2>/dev/null || echo "?")
 
   DONE=$((DONE + ${#BATCH[@]}))
+  echo $DONE > "$PROGRESS_FILE"
   PCT=$((DONE * 100 / TOTAL_MP3))
 
   # Barre de progression
@@ -79,6 +88,7 @@ for ((i=0; i<${#ALL_MP3[@]}; i+=BATCH_SIZE)); do
   echo -ne "\r  [${BAR}] ${PCT}% — ${DONE}/${TOTAL_MP3}"
 done
 
+rm -f "$PROGRESS_FILE"
 echo -e "\n${GREEN}✓ MP3 uploadés${NC}"
 
 # 3. Upload covers via sftp (plus rapide pour les images)
@@ -87,7 +97,7 @@ export PATH="/home/jocha/.fly/bin:$PATH"
 
 SFTP_CMDS=""
 SFTP_CMDS+="mkdir /data/covers\n"
-for f in "$COVERS_DIR"/*.jpg "$COVERS_DIR"/*.png "$COVERS_DIR"/*.webp 2>/dev/null; do
+for f in "$COVERS_DIR"/*.jpg "$COVERS_DIR"/*.png "$COVERS_DIR"/*.webp; do
   [ -f "$f" ] || continue
   SFTP_CMDS+="put \"$f\" /data/covers/$(basename "$f")\n"
 done

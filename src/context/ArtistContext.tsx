@@ -7,7 +7,7 @@ export type { ArtistProfile }
 
 interface ArtistContextValue {
   profile: ArtistProfile
-  updateProfile: (updates: Partial<ArtistProfile>) => void
+  updateProfile: (updates: Partial<ArtistProfile>) => Promise<void>
 }
 
 const DEFAULT_PROFILE: ArtistProfile = {
@@ -34,11 +34,11 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       .catch(() => {})
   }, [])
 
-  function updateProfile(updates: Partial<ArtistProfile>) {
+  async function updateProfile(updates: Partial<ArtistProfile>): Promise<void> {
     const next = { ...profile, ...updates }
     setProfile(next)
-    // Persister sur le serveur
-    fetch('/api/profile', {
+    // Persister sur le serveur (images déjà uploadées séparément, pas de base64 ici)
+    await fetch('/api/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
