@@ -13,7 +13,7 @@ import { useAdmin } from '@/context/AdminContext'
 import EditProfileModal from '@/components/profile/EditProfileModal'
 import AdminLoginModal from '@/components/admin/AdminLoginModal'
 
-const WHATSAPP_NUMBER = '33600000000' // ← remplace par ton numéro (sans +, ex: 33612345678)
+const WHATSAPP_NUMBER = '2290151012435'
 
 const TOTAL_TRACKS = JOCHA_TRACKS.length
 // Projets = albums + EP + mixtapes (hors singles)
