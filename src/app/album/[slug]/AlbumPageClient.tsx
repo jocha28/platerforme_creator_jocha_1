@@ -66,12 +66,12 @@ export default function AlbumPageClient({ album }: { album: Album }) {
 
         <div className="relative z-10 flex flex-col md:flex-row gap-8 md:gap-12 items-start md:items-end">
           {/* Artwork */}
-          <div className="w-48 md:w-80 lg:w-96 aspect-square bg-surface-container shadow-2xl relative overflow-hidden group shrink-0 rounded-lg">
+          <div className="w-48 h-48 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-surface-container shadow-2xl relative overflow-hidden group shrink-0 rounded-lg">
             <Image
               src={album.coverArt}
               alt={album.title}
               fill
-              className="object-cover object-top transition-all duration-700 group-hover:scale-105"
+              className="object-cover object-center transition-all duration-700 group-hover:scale-105"
               unoptimized
               priority
             />
