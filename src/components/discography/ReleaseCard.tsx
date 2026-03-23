@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Album } from '@/types'
-import MaterialIcon from '@/components/ui/MaterialIcon'
 import Badge from '@/components/ui/Badge'
 
 interface ReleaseCardProps {
@@ -21,7 +20,7 @@ export default function ReleaseCard({ album, variant = 'square', priority = fals
             src={album.coverArt}
             alt={album.title}
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
             unoptimized
             priority={priority}
           />
@@ -48,7 +47,7 @@ export default function ReleaseCard({ album, variant = 'square', priority = fals
             src={album.coverArt}
             alt={album.title}
             fill
-            className="object-cover transition-all duration-500 group-hover:scale-105"
+            className="object-cover object-top transition-all duration-500 group-hover:scale-105"
             unoptimized
           />
         </div>
@@ -69,7 +68,7 @@ export default function ReleaseCard({ album, variant = 'square', priority = fals
           src={album.coverArt}
           alt={album.title}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
           unoptimized
         />
         <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />

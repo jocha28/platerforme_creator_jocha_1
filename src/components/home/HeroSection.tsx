@@ -24,7 +24,7 @@ export default function HeroSection() {
           src={featured.coverArt}
           alt={featured.title}
           fill
-          className="object-cover scale-105"
+          className="object-cover object-top scale-105"
           unoptimized
           priority
         />

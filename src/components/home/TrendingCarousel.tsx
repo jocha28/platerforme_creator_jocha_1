@@ -41,7 +41,7 @@ export default function TrendingCarousel() {
                 src={track.albumArt}
                 alt={track.title}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
                 unoptimized
               />
               <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />

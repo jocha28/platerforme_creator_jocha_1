@@ -71,7 +71,7 @@ export default function AlbumPageClient({ album }: { album: Album }) {
               src={album.coverArt}
               alt={album.title}
               fill
-              className="object-cover transition-all duration-700 group-hover:scale-105"
+              className="object-cover object-top transition-all duration-700 group-hover:scale-105"
               unoptimized
               priority
             />

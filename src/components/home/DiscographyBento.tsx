@@ -33,7 +33,7 @@ export default function DiscographyBento() {
                   alt={album.title}
                   width={96}
                   height={96}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   unoptimized
                 />
               </div>
@@ -99,7 +99,7 @@ export default function DiscographyBento() {
                   src={item.coverArt}
                   alt={item.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                   unoptimized
                 />
               </div>
