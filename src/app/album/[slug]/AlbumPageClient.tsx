@@ -13,11 +13,15 @@ import { JOCHA_TRACKS } from '@/data/tracks'
 export default function AlbumPageClient({ album }: { album: Album }) {
   const { play, currentTrack, isPlaying, toggleFavorite, playCounts } = usePlayer()
 
-  // Pour les singles, album.tracks est vide — on récupère la piste depuis JOCHA_TRACKS
+  // album.tracks est toujours vide (données statiques) — on charge depuis JOCHA_TRACKS
   const tracks =
     album.tracks.length > 0
       ? album.tracks
-      : JOCHA_TRACKS.filter((t) => t.id === album.id)
+      : album.type === 'single'
+        ? JOCHA_TRACKS.filter((t) => t.id === album.id)
+        : JOCHA_TRACKS
+            .filter((t) => t.albumId === album.id)
+            .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
 
   const [favorites, setFavorites] = useState<Set<string>>(
     new Set(tracks.filter((t) => t.isFavorite).map((t) => t.id))
