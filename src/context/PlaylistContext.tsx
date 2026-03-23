@@ -28,27 +28,35 @@ const KEY = 'jocha_playlists'
 // IDs de tous les singles
 const SINGLE_IDS = JOCHA_TRACKS.filter((t) => t.albumId === 'singles').map((t) => t.id)
 
+const DEFAULT_SINGLES_PLAYLIST: Playlist = {
+  id: 'pl-singles-jocha',
+  name: 'Singles de Jocha',
+  description: `${SINGLE_IDS.length} singles officiels`,
+  cover: JOCHA_TRACKS.find((t) => t.albumId === 'singles')?.albumArt,
+  trackIds: SINGLE_IDS,
+  createdAt: 0,
+}
+
 export function PlaylistProvider({ children }: { children: ReactNode }) {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
 
   useEffect(() => {
     try {
       const s = localStorage.getItem(KEY)
-      if (!s) return
-      const loaded: Playlist[] = JSON.parse(s)
+      const loaded: Playlist[] = s ? JSON.parse(s) : []
 
-      // Auto-populate toute playlist nommée "SINGLE JOCHA" avec tous les singles
-      const updated = loaded.map((p) => {
-        if (p.name.toLowerCase() === 'single jocha') {
-          const existing = new Set(p.trackIds)
-          const merged = [...p.trackIds, ...SINGLE_IDS.filter((id) => !existing.has(id))]
-          return { ...p, trackIds: merged }
-        }
-        return p
-      })
+      // S'assurer que la playlist "Singles de Jocha" existe et est à jour
+      const hasSingles = loaded.some((p) => p.id === DEFAULT_SINGLES_PLAYLIST.id)
+      const base = hasSingles
+        ? loaded.map((p) =>
+            p.id === DEFAULT_SINGLES_PLAYLIST.id
+              ? { ...p, trackIds: SINGLE_IDS, description: DEFAULT_SINGLES_PLAYLIST.description }
+              : p
+          )
+        : [DEFAULT_SINGLES_PLAYLIST, ...loaded]
 
-      setPlaylists(updated)
-      try { localStorage.setItem(KEY, JSON.stringify(updated)) } catch {}
+      setPlaylists(base)
+      try { localStorage.setItem(KEY, JSON.stringify(base)) } catch {}
     } catch {}
   }, [])
 
