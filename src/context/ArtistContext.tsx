@@ -19,15 +19,14 @@ interface ArtistContextValue {
 }
 
 const DEFAULT_PROFILE: ArtistProfile = {
-  name: 'Synthetix',
+  name: 'Jocha',
   coverPhoto: '',
-  avatar:
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBcAW6oUGQK8oPMQq0ytrwOAON-oFN51vQ_5XZL4O89cLP-6Rx_dMvCANE0amwVjdeaI3QD_Fa2Nj80I313Blamxjb2TfEaCF2SaTIYKqw5HFpJbE2mgr_EwNm1zjSbYy8Mp6rET6pGfvs2StDYIgYohzDSDB0GQ7C9wTPdSdo2nrz5T6D-0cQ1FUlG-u0QaE2PzFpb7P9s6UulilV5YlfFoli804kD2zLZBj_E5e_bEPbdKIsJqs-WAqL8Sue6oE_3Bo96zy5JUOYy',
-  bio: "Synthetix est un projet musical né en 2021 de la convergence entre production électronique expérimentale et esthétique visuelle. Chaque release explore un territoire sonore distinct — du silence ambiant aux structures techno industrielles — créant une discographie cohérente et sans compromis.",
-  genres: ['Electronic', 'Ambient', 'Synthwave', 'Techno', 'Industrial'],
-  location: '',
+  avatar: '',
+  bio: "Jocha est un rappeur français de la génération 2020s, dont l'univers sonore se situe au carrefour du conscious hip-hop, du drill et du cloud rap. Artiste inclassable, il a bâti une discographie dense et cohérente autour d'une identité forte : celle d'un développeur qui rappe, ou d'un rappeur qui code.\n\nDepuis ses débuts, Jocha impose un style reconnaissable — des flows tranchants sur des productions sombres, des textes qui parlent en termes de commits, de bugs, de logs et de serveurs, mais pour raconter des histoires profondément humaines : l'ambition, la résistance, la solitude numérique, la quête de sens.\n\n« J'fais du code propre, mental sale / J'rap comme un log d'erreur brutal. »\n\nSa discographie compte 134 titres répartis entre 97 singles, deux albums (Bug Royal, Cas Isolé) et un EP (Jeune Vieux), tous sortis entre 2025 et 2026. Chaque projet est une couche supplémentaire d'un même projet artistique — construire une œuvre qui fait du sens là où d'autres chassent les views et la hype.\n\nSes influences vont de Kendrick Lamar au rap français le plus consciencieux, tout en développant un langage propre — celui d'une génération qui pense en binaire et ressent en storm.",
+  genres: ['Conscious Hip-Hop', 'French Rap', 'Cloud Rap', 'Drill', 'Dark Trap', 'Trap', 'Emo Rap', 'Underground Rap'],
+  location: 'France',
   website: '',
-  yearsActive: '2021',
+  yearsActive: '2025',
 }
 
 const ArtistContext = createContext<ArtistContextValue | null>(null)
@@ -42,7 +41,16 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(stored) })
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        // Réinitialiser si l'ancien profil est "Synthetix" (valeur par défaut obsolète)
+        if (parsed.name === 'Synthetix') {
+          localStorage.removeItem(STORAGE_KEY)
+          setProfile(DEFAULT_PROFILE)
+        } else {
+          setProfile({ ...DEFAULT_PROFILE, ...parsed })
+        }
+      }
     } catch {}
   }, [])
 
