@@ -67,6 +67,7 @@ export default function LibraryPage() {
             const firstTrack = pl.trackIds.length > 0
               ? JOCHA_TRACKS.find(t => t.id === pl.trackIds[0])
               : null
+            const displayCover = pl.cover ?? firstTrack?.albumArt ?? null
 
             return (
               <div key={pl.id} className="group relative">
@@ -76,9 +77,9 @@ export default function LibraryPage() {
                 >
                   {/* Cover */}
                   <div className="aspect-square relative rounded-xl overflow-hidden bg-surface-container mb-3 shadow-lg">
-                    {firstTrack ? (
+                    {displayCover ? (
                       <Image
-                        src={firstTrack.albumArt}
+                        src={displayCover}
                         alt={pl.name}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -91,6 +92,7 @@ export default function LibraryPage() {
                         </span>
                       </div>
                     )}
+
                     <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute bottom-3 right-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
                       <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-xl">
