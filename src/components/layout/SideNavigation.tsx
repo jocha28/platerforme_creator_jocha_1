@@ -81,7 +81,7 @@ export default function SideNavigation() {
           </span>
         </Link>
         <p className="font-label text-[10px] text-on-surface-variant/40 uppercase tracking-widest px-3 pt-2">
-          © 2026 Sonic Gallery
+          © 2026 OWL RECORDS
         </p>
       </div>
     </aside>
