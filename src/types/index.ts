@@ -30,6 +30,26 @@ export interface Album {
   isFeatured: boolean
 }
 
+export interface ArtistProfile {
+  name: string
+  avatar: string
+  coverPhoto: string
+  bio: string
+  genres: string[]
+  location: string
+  website: string
+  yearsActive: string
+}
+
+export interface Playlist {
+  id: string
+  name: string
+  trackIds: string[]
+  createdAt: number
+  cover?: string
+  description?: string
+}
+
 export type TabId = 'latest' | 'albums' | 'mixtapes' | 'eps' | 'singles'
 
 export interface NavItem {

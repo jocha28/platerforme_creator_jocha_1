@@ -55,12 +55,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => { isShuffleRef.current = isShuffle }, [isShuffle])
   useEffect(() => { isRepeatRef.current = isRepeat }, [isRepeat])
 
-  // Charger les play counts depuis localStorage après montage
+  // Charger les play counts depuis le serveur après montage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('jocha_play_counts')
-      if (stored) setPlayCounts(JSON.parse(stored))
-    } catch {}
+    fetch('/api/play-counts')
+      .then((r) => r.ok ? r.json() : {})
+      .then((data: Record<string, number>) => setPlayCounts(data))
+      .catch(() => {})
   }, [])
 
   // Initialise l'élément audio une seule fois côté client
@@ -100,11 +100,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             audio.play().catch(() => {})
           }
           setIsPlaying(true)
-          setPlayCounts((prev) => {
-            const next = { ...prev, [nextTrack.id]: (prev[nextTrack.id] ?? 0) + 1 }
-            try { localStorage.setItem('jocha_play_counts', JSON.stringify(next)) } catch {}
-            return next
-          })
+          setPlayCounts((prev) => ({ ...prev, [nextTrack.id]: (prev[nextTrack.id] ?? 0) + 1 }))
+          fetch('/api/play-counts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trackId: nextTrack.id }),
+          }).catch(() => {})
         } else {
           // Fin de la file
           setIsPlaying(false)
@@ -145,12 +146,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIsPlaying(true)
     if (newQueue) setQueue(newQueue)
 
-    // Incrémenter le play count et persister
-    setPlayCounts((prev) => {
-      const next = { ...prev, [track.id]: (prev[track.id] ?? 0) + 1 }
-      try { localStorage.setItem('jocha_play_counts', JSON.stringify(next)) } catch {}
-      return next
-    })
+    // Incrémenter le play count (local + serveur)
+    setPlayCounts((prev) => ({ ...prev, [track.id]: (prev[track.id] ?? 0) + 1 }))
+    fetch('/api/play-counts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackId: track.id }),
+    }).catch(() => {})
   }, [])
 
   const pause = useCallback(() => {

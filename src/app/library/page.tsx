@@ -13,10 +13,10 @@ export default function LibraryPage() {
   const [showModal, setShowModal] = useState(false)
   const [newName, setNewName] = useState('')
 
-  function handleCreate() {
+  async function handleCreate() {
     const name = newName.trim()
     if (!name) return
-    const pl = createPlaylist(name)
+    const pl = await createPlaylist(name)
     setNewName('')
     setShowModal(false)
     router.push(`/playlist/${pl.id}`)

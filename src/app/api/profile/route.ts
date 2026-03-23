@@ -1,14 +1,8 @@
-'use client'
-
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { NextRequest, NextResponse } from 'next/server'
+import { readStore, writeStore } from '@/lib/server-store'
 import { ArtistProfile } from '@/types'
 
-export type { ArtistProfile }
-
-interface ArtistContextValue {
-  profile: ArtistProfile
-  updateProfile: (updates: Partial<ArtistProfile>) => void
-}
+export const runtime = 'nodejs'
 
 const DEFAULT_PROFILE: ArtistProfile = {
   name: 'Jocha',
@@ -21,39 +15,20 @@ const DEFAULT_PROFILE: ArtistProfile = {
   yearsActive: '2025',
 }
 
-const ArtistContext = createContext<ArtistContextValue | null>(null)
-
-export function ArtistProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<ArtistProfile>(DEFAULT_PROFILE)
-
-  // Charger le profil depuis le serveur (source de vérité partagée entre tous les appareils)
-  useEffect(() => {
-    fetch('/api/profile')
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data) setProfile(data) })
-      .catch(() => {})
-  }, [])
-
-  function updateProfile(updates: Partial<ArtistProfile>) {
-    const next = { ...profile, ...updates }
-    setProfile(next)
-    // Persister sur le serveur
-    fetch('/api/profile', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    }).catch(() => {})
-  }
-
-  return (
-    <ArtistContext.Provider value={{ profile, updateProfile }}>
-      {children}
-    </ArtistContext.Provider>
-  )
+export function GET() {
+  const profile = readStore<ArtistProfile>('profile.json', DEFAULT_PROFILE)
+  return NextResponse.json(profile, {
+    headers: { 'Cache-Control': 'no-store' },
+  })
 }
 
-export function useArtist() {
-  const ctx = useContext(ArtistContext)
-  if (!ctx) throw new Error('useArtist must be used inside ArtistProvider')
-  return ctx
+export async function PUT(req: NextRequest) {
+  if (req.cookies.get('admin_session')?.value !== process.env.ADMIN_PASSWORD) {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  }
+  const updates: Partial<ArtistProfile> = await req.json()
+  const current = readStore<ArtistProfile>('profile.json', DEFAULT_PROFILE)
+  const next = { ...current, ...updates }
+  writeStore('profile.json', next)
+  return NextResponse.json(next)
 }

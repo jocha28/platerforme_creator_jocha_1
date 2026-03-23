@@ -54,10 +54,10 @@ export default function TrackRow({
     setNewName('')
   }
 
-  function handleCreateAndAdd() {
+  async function handleCreateAndAdd() {
     const name = newName.trim()
     if (!name) return
-    const pl = createPlaylist(name)
+    const pl = await createPlaylist(name)
     addToPlaylist(pl.id, track.id)
     setDropdownOpen(false)
     setNewPlaylistMode(false)

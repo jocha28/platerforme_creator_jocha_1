@@ -8,6 +8,7 @@ primary_region = "cdg"
   NODE_ENV = "production"
   AUDIO_DIR = "/data/audio"
   COVERS_DIR = "/data/covers"
+  DATA_DIR = "/data"
 
 [http_service]
   internal_port = 3000
