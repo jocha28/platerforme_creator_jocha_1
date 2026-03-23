@@ -32,24 +32,31 @@ const DEFAULT_PROFILE: ArtistProfile = {
 const ArtistContext = createContext<ArtistContextValue | null>(null)
 
 const STORAGE_KEY = 'jocha_artist_profile'
+// Incrémenter ce numéro force la réinitialisation du profil pour tous les utilisateurs
+const PROFILE_VERSION = 2
 
 export function ArtistProvider({ children }: { children: ReactNode }) {
-  // Toujours démarrer avec DEFAULT_PROFILE (server + client identiques = pas de mismatch)
   const [profile, setProfile] = useState<ArtistProfile>(DEFAULT_PROFILE)
 
-  // Après montée côté client, charger depuis localStorage
   useEffect(() => {
     try {
+      const storedVersion = parseInt(localStorage.getItem('jocha_profile_version') ?? '0', 10)
       const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        // Réinitialiser si l'ancien profil est "Synthetix" (valeur par défaut obsolète)
-        if (parsed.name === 'Synthetix') {
-          localStorage.removeItem(STORAGE_KEY)
-          setProfile(DEFAULT_PROFILE)
-        } else {
-          setProfile({ ...DEFAULT_PROFILE, ...parsed })
+
+      if (!stored || storedVersion < PROFILE_VERSION) {
+        // Première visite ou version obsolète : appliquer les nouveaux défauts
+        // Conserver avatar et coverPhoto si l'utilisateur les avait personnalisés
+        const prev = stored ? JSON.parse(stored) : {}
+        const next = {
+          ...DEFAULT_PROFILE,
+          avatar: prev.avatar || DEFAULT_PROFILE.avatar,
+          coverPhoto: prev.coverPhoto || DEFAULT_PROFILE.coverPhoto,
         }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        localStorage.setItem('jocha_profile_version', String(PROFILE_VERSION))
+        setProfile(next)
+      } else {
+        setProfile({ ...DEFAULT_PROFILE, ...JSON.parse(stored) })
       }
     } catch {}
   }, [])
