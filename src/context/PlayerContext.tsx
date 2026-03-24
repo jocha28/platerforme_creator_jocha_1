@@ -2,6 +2,29 @@
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react'
 import { Track } from '@/types'
+import { JOCHA_TRACKS } from '@/data/tracks'
+
+const STORAGE_KEY = 'jocha_player_session'
+
+interface SavedSession {
+  trackId: string
+  queueIds: string[]
+  currentTime: number
+  volume: number
+  isShuffle: boolean
+  isRepeat: boolean
+}
+
+function saveSession(data: SavedSession) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch {}
+}
+
+function loadSession(): SavedSession | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as SavedSession) : null
+  } catch { return null }
+}
 
 interface PlayerState {
   currentTrack: Track | null
@@ -31,14 +54,19 @@ interface PlayerActions {
 const PlayerContext = createContext<(PlayerState & PlayerActions) | null>(null)
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
+  // Charger la session sauvegardée (côté client uniquement)
+  const savedSession = typeof window !== 'undefined' ? loadSession() : null
+  const savedTrack = savedSession ? JOCHA_TRACKS.find(t => t.id === savedSession.trackId) ?? null : null
+  const savedQueue = savedSession ? savedSession.queueIds.map(id => JOCHA_TRACKS.find(t => t.id === id)).filter(Boolean) as Track[] : []
+
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(savedTrack)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
+  const [currentTime, setCurrentTime] = useState(savedSession?.currentTime ?? 0)
   const [duration, setDuration] = useState(0)
-  const [volume, setVolumeState] = useState(0.7)
-  const [queue, setQueue] = useState<Track[]>([])
-  const [isShuffle, setIsShuffle] = useState(false)
-  const [isRepeat, setIsRepeat] = useState(false)
+  const [volume, setVolumeState] = useState(savedSession?.volume ?? 0.7)
+  const [queue, setQueue] = useState<Track[]>(savedQueue)
+  const [isShuffle, setIsShuffle] = useState(savedSession?.isShuffle ?? false)
+  const [isRepeat, setIsRepeat] = useState(savedSession?.isRepeat ?? false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({})
 
@@ -88,7 +116,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = new Audio()
     audioRef.current = audio
-    audio.volume = 0.7
+    audio.volume = savedSession?.volume ?? 0.7
+
+    // Restaurer la position de la session précédente (sans auto-play)
+    if (savedTrack?.audioUrl) {
+      audio.src = savedTrack.audioUrl
+      audio.load()
+      audio.addEventListener('loadedmetadata', () => {
+        if (savedSession && savedSession.currentTime > 0) {
+          audio.currentTime = savedSession.currentTime
+        }
+      }, { once: true })
+    }
 
     audio.addEventListener('timeupdate', () => {
       setCurrentTime(audio.currentTime)
@@ -203,6 +242,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = Math.max(0, Math.min(1, volume))
   }, [volume])
+
+  // Sauvegarder la session en continu
+  useEffect(() => {
+    if (!currentTrack) return
+    saveSession({
+      trackId: currentTrack.id,
+      queueIds: queue.map(t => t.id),
+      currentTime,
+      volume,
+      isShuffle,
+      isRepeat,
+    })
+  }, [currentTrack, currentTime, queue, volume, isShuffle, isRepeat])
 
   // Enregistrer les actions Media Session (boutons de la notification OS)
   useEffect(() => {
