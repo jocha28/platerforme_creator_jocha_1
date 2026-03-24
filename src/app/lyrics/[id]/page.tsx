@@ -298,7 +298,7 @@ export default function LyricsPage() {
               <div className="mt-8">
                 <p className="font-label text-[9px] uppercase tracking-[0.2em] text-on-surface-variant font-bold mb-4">Genres</p>
                 <div className="flex flex-wrap gap-2">
-                  {(track.genres ?? []).map((g) => (
+                  {track.genres.map((g) => (
                     <span key={g} className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 font-label text-[10px] uppercase tracking-wider text-primary">
                       {g}
                     </span>
