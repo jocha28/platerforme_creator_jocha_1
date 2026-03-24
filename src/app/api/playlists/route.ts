@@ -32,7 +32,6 @@ function getPlaylists(): Playlist[] {
 
 export function GET() {
   const playlists = getPlaylists()
-  writeStore('playlists.json', playlists)
   return NextResponse.json(playlists, {
     headers: { 'Cache-Control': 'no-store' },
   })
