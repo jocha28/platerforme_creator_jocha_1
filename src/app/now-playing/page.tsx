@@ -113,14 +113,9 @@ export default function NowPlayingPage() {
               <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary">En lecture</p>
               <p className="font-label text-xs text-on-surface-variant mt-0.5">{currentTrack.albumTitle}</p>
             </div>
-            <div className="flex items-center gap-3">
-              <Link href={`/lyrics/${currentTrack.id}`} className="text-on-surface-variant hover:text-primary transition-colors">
-                <MaterialIcon name="auto_stories" />
-              </Link>
-              <Link href={`/album/${currentTrack.albumId}`} className="text-on-surface-variant hover:text-primary transition-colors">
-                <MaterialIcon name="queue_music" />
-              </Link>
-            </div>
+            <Link href={`/album/${currentTrack.albumId}`} className="text-on-surface-variant hover:text-primary transition-colors">
+              <MaterialIcon name="queue_music" />
+            </Link>
           </div>
 
           {/* Artwork */}
@@ -328,10 +323,6 @@ export default function NowPlayingPage() {
             <div className="flex items-center gap-2 mb-4">
               <span className="px-2 py-0.5 bg-surface-container-highest text-[10px] font-bold tracking-widest text-on-surface-variant rounded">44.1 KHZ</span>
               <span className="px-2 py-0.5 bg-surface-container-highest text-[10px] font-bold tracking-widest text-on-surface-variant rounded">LOSSLESS</span>
-              <Link href={`/lyrics/${currentTrack.id}`} className="ml-auto flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors">
-                <MaterialIcon name="auto_stories" />
-                <span className="font-label text-[10px] uppercase tracking-widest">Paroles</span>
-              </Link>
             </div>
             <h1 className="font-headline text-2xl font-bold text-primary mb-1">{currentTrack.artist}</h1>
             <div className="flex items-center justify-between">
