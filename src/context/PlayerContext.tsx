@@ -46,6 +46,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Audio secondaire pour précharger le prochain son
   const preloadRef = useRef<HTMLAudioElement | null>(null)
   const preloadedIdRef = useRef<string | null>(null)
+  // En mode shuffle, on fixe le prochain son à l'avance pour pouvoir le précharger
+  const preloadedNextTrackRef = useRef<Track | null>(null)
   // Refs miroirs pour les closures du listener 'ended' (évite le stale closure)
   const queueRef = useRef<Track[]>([])
   const currentTrackRef = useRef<Track | null>(null)
@@ -75,23 +77,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.addEventListener('timeupdate', () => {
       setCurrentTime(audio.currentTime)
 
-      // Précharger le prochain son 15 secondes avant la fin
-      if (!isShuffleRef.current && audio.duration > 0 && audio.duration - audio.currentTime < 15) {
+      // Précharger le prochain son 40 secondes avant la fin
+      if (audio.duration > 0 && audio.duration - audio.currentTime < 40) {
         const q = queueRef.current
         const cur = currentTrackRef.current
-        if (cur && q.length > 0) {
+        if (cur && q.length > 0 && preloadedIdRef.current === null) {
           const idx = q.findIndex((t) => t.id === cur.id)
-          const nextIdx = idx + 1
-          if (nextIdx < q.length) {
-            const nextTrack = q[nextIdx]
-            if (nextTrack.audioUrl && preloadedIdRef.current !== nextTrack.id) {
-              const pre = new Audio()
-              pre.preload = 'auto'
-              pre.src = nextTrack.audioUrl
-              pre.load()
-              preloadRef.current = pre
-              preloadedIdRef.current = nextTrack.id
+          let nextTrack: Track | undefined
+
+          if (isShuffleRef.current) {
+            // Shuffle : choisir maintenant le prochain son aléatoire et le mémoriser
+            const candidates = q.filter((t) => t.id !== cur.id)
+            if (candidates.length > 0) {
+              nextTrack = candidates[Math.floor(Math.random() * candidates.length)]
+              preloadedNextTrackRef.current = nextTrack
             }
+          } else {
+            const nextIdx = idx + 1
+            if (nextIdx < q.length) nextTrack = q[nextIdx]
+          }
+
+          if (nextTrack?.audioUrl) {
+            const pre = new Audio()
+            pre.preload = 'auto'
+            pre.src = nextTrack.audioUrl
+            pre.load()
+            preloadRef.current = pre
+            preloadedIdRef.current = nextTrack.id
           }
         }
       }
@@ -112,23 +124,34 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
       if (cur && q.length > 0) {
         const idx = q.findIndex((t) => t.id === cur.id)
-        const nextIdx = shuffle
-          ? Math.floor(Math.random() * q.length)
-          : idx + 1
-        if (nextIdx < q.length) {
-          // Il y a un suivant : auto-play
-          const nextTrack = q[nextIdx]
+
+        // Déterminer le prochain son : priorité au son préchargé (shuffle ou non)
+        let nextTrack: Track | undefined
+        if (preloadRef.current && preloadedIdRef.current) {
+          // Shuffle : utiliser le son déjà tiré au sort lors du préchargement
+          nextTrack = shuffle
+            ? (preloadedNextTrackRef.current ?? undefined)
+            : q[idx + 1]
+          // Fallback si la ref est perdue
+          if (!nextTrack) nextTrack = q.find((t) => t.id === preloadedIdRef.current) ?? q[idx + 1]
+        } else {
+          const nextIdx = shuffle
+            ? Math.floor(Math.random() * q.length)
+            : idx + 1
+          nextTrack = nextIdx < q.length ? q[nextIdx] : undefined
+        }
+
+        if (nextTrack) {
           setCurrentTrack(nextTrack)
           setCurrentTime(0)
           if (nextTrack.audioUrl) {
-            // Utiliser l'audio préchargé si disponible, sinon charger normalement
-            if (!shuffle && preloadRef.current && preloadedIdRef.current === nextTrack.id) {
-              const pre = preloadRef.current
-              audio.src = pre.src
-              // Ne pas appeler load() : le navigateur a déjà bufférisé depuis preload
+            // Utiliser l'audio préchargé si disponible
+            if (preloadRef.current && preloadedIdRef.current === nextTrack.id) {
+              audio.src = preloadRef.current.src
               audio.play().catch(() => {})
               preloadRef.current = null
               preloadedIdRef.current = null
+              preloadedNextTrackRef.current = null
             } else {
               audio.src = nextTrack.audioUrl
               audio.load()
@@ -136,11 +159,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             }
           }
           setIsPlaying(true)
-          setPlayCounts((prev) => ({ ...prev, [nextTrack.id]: (prev[nextTrack.id] ?? 0) + 1 }))
+          setPlayCounts((prev) => ({ ...prev, [nextTrack!.id]: (prev[nextTrack!.id] ?? 0) + 1 }))
           fetch('/api/play-counts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trackId: nextTrack.id }),
+            body: JSON.stringify({ trackId: nextTrack!.id }),
           }).catch(() => {})
         } else {
           // Fin de la file
@@ -174,6 +197,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     // Réinitialiser le preload si on change de son manuellement
     preloadRef.current = null
     preloadedIdRef.current = null
+    preloadedNextTrackRef.current = null
 
     if (track.audioUrl) {
       audio.src = track.audioUrl
