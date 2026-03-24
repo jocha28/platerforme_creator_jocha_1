@@ -96,6 +96,40 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       .catch(() => {})
   }, [])
 
+  // Précharger le prochain son immédiatement après le démarrage du son actuel
+  const preloadNext = useCallback((currentTrackId: string, q: Track[], shuffle: boolean) => {
+    // Annuler tout préchargement en cours
+    if (preloadRef.current) {
+      preloadRef.current.src = ''
+      preloadRef.current = null
+    }
+    preloadedIdRef.current = null
+    preloadedNextTrackRef.current = null
+
+    if (q.length === 0) return
+
+    let nextTrack: Track | undefined
+    if (shuffle) {
+      const candidates = q.filter((t) => t.id !== currentTrackId)
+      if (candidates.length > 0) {
+        nextTrack = candidates[Math.floor(Math.random() * candidates.length)]
+        preloadedNextTrackRef.current = nextTrack
+      }
+    } else {
+      const idx = q.findIndex((t) => t.id === currentTrackId)
+      if (idx >= 0 && idx + 1 < q.length) nextTrack = q[idx + 1]
+    }
+
+    if (nextTrack?.audioUrl) {
+      const pre = new Audio()
+      pre.preload = 'auto'
+      pre.src = nextTrack.audioUrl
+      pre.load()
+      preloadRef.current = pre
+      preloadedIdRef.current = nextTrack.id
+    }
+  }, [])
+
   // Mettre à jour la notification média OS/navigateur
   const updateMediaSession = useCallback((track: Track) => {
     if (!('mediaSession' in navigator)) return
@@ -129,40 +163,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }, { once: true })
     }
 
-    audio.addEventListener('timeupdate', () => {
-      setCurrentTime(audio.currentTime)
-
-      // Précharger le prochain son 40 secondes avant la fin
-      if (audio.duration > 0 && audio.duration - audio.currentTime < 40) {
-        const q = queueRef.current
-        const cur = currentTrackRef.current
-        if (cur && q.length > 0 && preloadedIdRef.current === null) {
-          const idx = q.findIndex((t) => t.id === cur.id)
-          let nextTrack: Track | undefined
-
-          if (isShuffleRef.current) {
-            // Shuffle : choisir maintenant le prochain son aléatoire et le mémoriser
-            const candidates = q.filter((t) => t.id !== cur.id)
-            if (candidates.length > 0) {
-              nextTrack = candidates[Math.floor(Math.random() * candidates.length)]
-              preloadedNextTrackRef.current = nextTrack
-            }
-          } else {
-            const nextIdx = idx + 1
-            if (nextIdx < q.length) nextTrack = q[nextIdx]
-          }
-
-          if (nextTrack?.audioUrl) {
-            const pre = new Audio()
-            pre.preload = 'auto'
-            pre.src = nextTrack.audioUrl
-            pre.load()
-            preloadRef.current = pre
-            preloadedIdRef.current = nextTrack.id
-          }
-        }
-      }
-    })
+    audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime))
     audio.addEventListener('loadedmetadata', () => setDuration(audio.duration))
     audio.addEventListener('ended', () => {
       const q = queueRef.current
@@ -215,6 +216,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           }
           setIsPlaying(true)
           updateMediaSession(nextTrack)
+          // Précharger le son d'après immédiatement
+          preloadNext(nextTrack.id, q, shuffle)
           setPlayCounts((prev) => ({ ...prev, [nextTrack!.id]: (prev[nextTrack!.id] ?? 0) + 1 }))
           fetch('/api/play-counts', {
             method: 'POST',
@@ -342,6 +345,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (newQueue) setQueue(newQueue)
 
     updateMediaSession(track)
+
+    // Précharger le prochain son immédiatement
+    preloadNext(track.id, newQueue ?? queueRef.current, isShuffleRef.current)
 
     // Incrémenter le play count (local + serveur)
     setPlayCounts((prev) => ({ ...prev, [track.id]: (prev[track.id] ?? 0) + 1 }))
