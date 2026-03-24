@@ -68,6 +68,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       .catch(() => {})
   }, [])
 
+  // Mettre à jour la notification média OS/navigateur
+  const updateMediaSession = useCallback((track: Track) => {
+    if (!('mediaSession' in navigator)) return
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.title,
+      artist: track.artist,
+      album: track.albumTitle,
+      artwork: track.albumArt
+        ? [
+            { src: track.albumArt, sizes: '512x512', type: 'image/jpeg' },
+            { src: track.albumArt, sizes: '256x256', type: 'image/jpeg' },
+          ]
+        : [],
+    })
+  }, [])
+
   // Initialise l'élément audio une seule fois côté client
   useEffect(() => {
     const audio = new Audio()
@@ -159,6 +175,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             }
           }
           setIsPlaying(true)
+          updateMediaSession(nextTrack)
           setPlayCounts((prev) => ({ ...prev, [nextTrack!.id]: (prev[nextTrack!.id] ?? 0) + 1 }))
           fetch('/api/play-counts', {
             method: 'POST',
@@ -187,6 +204,68 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (audioRef.current) audioRef.current.volume = Math.max(0, Math.min(1, volume))
   }, [volume])
 
+  // Enregistrer les actions Media Session (boutons de la notification OS)
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return
+    navigator.mediaSession.setActionHandler('play', () => {
+      audioRef.current?.play().catch(() => {})
+      setIsPlaying(true)
+    })
+    navigator.mediaSession.setActionHandler('pause', () => {
+      audioRef.current?.pause()
+      setIsPlaying(false)
+    })
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      const q = queueRef.current
+      const cur = currentTrackRef.current
+      if (!cur || q.length === 0) return
+      const idx = q.findIndex((t) => t.id === cur.id)
+      const nextIdx = isShuffleRef.current
+        ? Math.floor(Math.random() * q.length)
+        : (idx + 1) % q.length
+      const next = q[nextIdx]
+      if (next) {
+        const audio = audioRef.current
+        if (!audio) return
+        setCurrentTrack(next)
+        setCurrentTime(0)
+        preloadRef.current = null
+        preloadedIdRef.current = null
+        preloadedNextTrackRef.current = null
+        audio.src = next.audioUrl ?? ''
+        audio.load()
+        audio.play().catch(() => {})
+        setIsPlaying(true)
+        updateMediaSession(next)
+      }
+    })
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      const audio = audioRef.current
+      const q = queueRef.current
+      const cur = currentTrackRef.current
+      if (!cur || q.length === 0 || !audio) return
+      if (audio.currentTime > 3) {
+        audio.currentTime = 0
+        setCurrentTime(0)
+        return
+      }
+      const idx = q.findIndex((t) => t.id === cur.id)
+      const prev = q[idx === 0 ? q.length - 1 : idx - 1]
+      if (prev) {
+        setCurrentTrack(prev)
+        setCurrentTime(0)
+        preloadRef.current = null
+        preloadedIdRef.current = null
+        preloadedNextTrackRef.current = null
+        audio.src = prev.audioUrl ?? ''
+        audio.load()
+        audio.play().catch(() => {})
+        setIsPlaying(true)
+        updateMediaSession(prev)
+      }
+    })
+  }, [updateMediaSession])
+
   const play = useCallback((track: Track, newQueue?: Track[]) => {
     const audio = audioRef.current
     if (!audio) return
@@ -209,6 +288,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     setIsPlaying(true)
     if (newQueue) setQueue(newQueue)
+
+    updateMediaSession(track)
 
     // Incrémenter le play count (local + serveur)
     setPlayCounts((prev) => ({ ...prev, [track.id]: (prev[track.id] ?? 0) + 1 }))
