@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation'
 import Avatar from '@/components/ui/Avatar'
 import MaterialIcon from '@/components/ui/MaterialIcon'
 import { useArtist } from '@/context/ArtistContext'
+import { usePlayer } from '@/context/PlayerContext'
+import { usePanel } from '@/context/PanelContext'
 
 export default function DesktopTopBar() {
   const router = useRouter()
   const [query, setQuery] = useState('')
   const { profile } = useArtist()
+  const { currentTrack } = usePlayer()
+  const { panelOpen, togglePanel, sidebarCollapsed } = usePanel()
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -19,7 +23,7 @@ export default function DesktopTopBar() {
   }
 
   return (
-    <header className="hidden lg:flex fixed top-0 left-64 right-0 h-16 z-40 bg-background/80 backdrop-blur-xl border-b border-outline-variant/10 items-center justify-between px-8">
+    <header className={`hidden lg:flex fixed top-0 right-0 h-16 z-40 bg-background/80 backdrop-blur-xl border-b border-outline-variant/10 items-center justify-between px-8 transition-all duration-300 ${sidebarCollapsed ? 'left-16' : 'left-64'}`}>
       {/* Search */}
       <form onSubmit={handleSearch} className="flex-1 max-w-md">
         <div className="relative">
@@ -39,6 +43,15 @@ export default function DesktopTopBar() {
 
       {/* Right actions */}
       <div className="flex items-center gap-3 ml-6">
+        {currentTrack && !panelOpen && (
+          <button
+            onClick={togglePanel}
+            title="Ouvrir le panneau"
+            className="w-9 h-9 rounded-full flex items-center justify-center bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all"
+          >
+            <MaterialIcon name="right_panel_open" className="text-lg" />
+          </button>
+        )}
         <Avatar src={profile.avatar} alt={profile.name} size="sm" />
       </div>
     </header>

@@ -5,6 +5,7 @@ import { PlayerProvider } from '@/context/PlayerContext'
 import { ArtistProvider } from '@/context/ArtistContext'
 import { PlaylistProvider } from '@/context/PlaylistContext'
 import { AdminProvider } from '@/context/AdminContext'
+import { PanelProvider } from '@/context/PanelContext'
 import AppShell from '@/components/layout/AppShell'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 
@@ -60,9 +61,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ArtistProvider>
             <PlayerProvider>
               <PlaylistProvider>
-                <AppShell>
-                  {children}
-                </AppShell>
+                <PanelProvider>
+                  <AppShell>
+                    {children}
+                  </AppShell>
+                </PanelProvider>
               </PlaylistProvider>
             </PlayerProvider>
           </ArtistProvider>

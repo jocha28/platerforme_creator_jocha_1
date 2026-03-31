@@ -30,6 +30,12 @@ export interface Album {
   isFeatured: boolean
 }
 
+export interface ArtistPick {
+  releaseSlug: string
+  backgroundPhoto: string
+  description: string
+}
+
 export interface ArtistProfile {
   name: string
   avatar: string
@@ -39,6 +45,7 @@ export interface ArtistProfile {
   location: string
   website: string
   yearsActive: string
+  artistPick?: ArtistPick
 }
 
 export interface Playlist {

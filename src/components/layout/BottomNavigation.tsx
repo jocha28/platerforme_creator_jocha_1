@@ -5,18 +5,18 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
-  { label: 'Home', icon: 'home_max', href: '/' },
-  { label: 'Library', icon: 'album', href: '/library' },
-  { label: 'Search', icon: 'search', href: '/search' },
-  { label: 'Profile', icon: 'person', href: '/profile' },
-  { label: 'App', icon: 'download', href: '/download' },
+  { label: 'Home',   icon: 'home_max',          href: '/'               },
+  { label: 'Search', icon: 'search',             href: '/search'         },
+  { label: 'Certifs',icon: 'workspace_premium',  href: '/certifications' },
+  { label: 'Library',icon: 'album',              href: '/library'        },
+  { label: 'Profile',icon: 'person',             href: '/profile'        },
 ]
 
 export default function BottomNavigation() {
   const pathname = usePathname()
 
   return (
-    <nav className="md:hidden fixed bottom-0 w-full z-50 bg-surface-container-low/60 backdrop-blur-3xl flex justify-around items-center h-20 shadow-[0_-4px_40px_rgba(0,0,0,0.5)]">
+    <nav className="lg:hidden fixed bottom-0 w-full z-50 bg-surface-container-low/60 backdrop-blur-3xl flex justify-around items-center h-20 shadow-[0_-4px_40px_rgba(0,0,0,0.5)]">
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
         return (

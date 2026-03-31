@@ -4,115 +4,140 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { MOCK_RELEASES } from '@/data/releases'
 import MaterialIcon from '@/components/ui/MaterialIcon'
+import { usePlayer } from '@/context/PlayerContext'
+import { JOCHA_TRACKS } from '@/data/tracks'
+
+type Release = typeof MOCK_RELEASES[0]
 
 export default function DiscographyBento() {
-  const albums = MOCK_RELEASES.filter((r) => r.type === 'album')
-  const eps = MOCK_RELEASES.filter((r) => r.type === 'ep')
+  const { play } = usePlayer()
+
+  const albums  = MOCK_RELEASES.filter((r) => r.type === 'album')
+  const eps     = MOCK_RELEASES.filter((r) => r.type === 'ep')
   const singles = MOCK_RELEASES.filter((r) => r.type === 'single')
 
-  return (
-    <section className="mt-20 px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-6">
-      {/* Albums */}
-      <div className="md:col-span-8 bg-surface-container-low p-8 rounded-2xl">
-        <div className="flex justify-between items-center mb-8">
-          <h3 className="font-headline text-3xl font-black tracking-tighter">ALBUMS</h3>
-          <Link href="/discography" className="text-primary">
-            <MaterialIcon name="arrow_forward" />
-          </Link>
+  function onPlay(r: Release) {
+    const tracks = JOCHA_TRACKS
+      .filter((t) => t.albumId === r.id)
+      .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
+    if (tracks.length > 0) play(tracks[0], tracks)
+  }
+
+  function StaticRow({ label, accent, items }: { label: string; accent: string; items: Release[] }) {
+    if (items.length === 0) return null
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-4 px-6 md:px-12">
+          <span className={`w-1 h-4 rounded-full ${accent}`} />
+          <p className="font-label text-[11px] uppercase tracking-[0.25em] text-on-surface font-bold">{label}</p>
+          <span className="font-mono text-[11px] text-on-surface-variant/40 ml-2">{items.length}</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {albums.slice(0, 4).map((album) => (
-            <Link
-              key={album.id}
-              href={`/album/${album.slug}`}
-              className="group flex gap-4 items-center cursor-pointer"
+        <div className="flex gap-4 px-6 md:px-12 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          {items.map((r) => (
+            <button
+              key={r.id}
+              className="group flex items-center gap-4 px-4 py-3 rounded-2xl bg-surface-container-high hover:bg-surface-container transition-colors text-left shrink-0"
+              style={{ minWidth: '220px' }}
+              onClick={() => onPlay(r)}
             >
-              <div className="w-20 h-20 md:w-24 md:h-24 flex-none rounded-lg overflow-hidden bg-surface-container">
-                <Image
-                  src={album.coverArt}
-                  alt={album.title}
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-cover object-top"
-                  unoptimized
-                />
+              <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-surface-container">
+                <Image src={r.coverArt} alt={r.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
+                  <MaterialIcon name="play_arrow" filled className="text-xl text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
-              <div>
-                <h5 className="font-headline font-bold text-base md:text-lg leading-tight group-hover:text-primary transition-colors">
-                  {album.title}
-                </h5>
-                <p className="font-label text-xs text-on-surface-variant uppercase tracking-wider mt-1">
-                  {album.tracks.length || '12'} Tracks • {album.year}
+              <div className="min-w-0 flex-1">
+                <p className="font-headline font-black text-sm text-on-surface group-hover:text-primary transition-colors truncate leading-tight">
+                  {r.title}
                 </p>
+                <p className="font-label text-[10px] text-on-surface-variant/40 uppercase tracking-wider mt-1">{r.year}</p>
+                <Link
+                  href={`/album/${r.slug}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-label text-[10px] text-on-surface-variant/30 hover:text-primary transition-colors uppercase tracking-wider"
+                >
+                  Voir →
+                </Link>
               </div>
-            </Link>
+            </button>
           ))}
         </div>
       </div>
+    )
+  }
 
-      {/* EPs */}
-      <div className="md:col-span-4 bg-surface-container p-8 rounded-2xl flex flex-col justify-between">
+  const singlesLoop = [...singles, ...singles, ...singles]
+
+  return (
+    <section className="mt-20 space-y-8">
+
+      {/* En-tête */}
+      <div className="flex justify-between items-baseline px-6 md:px-12">
+        <h3 className="font-headline text-2xl font-bold tracking-tight">Discographie</h3>
+        <Link
+          href="/discography"
+          className="font-label text-xs font-bold text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-1"
+        >
+          Tout voir <MaterialIcon name="arrow_forward" className="text-sm" />
+        </Link>
+      </div>
+
+      {/* Albums — statique */}
+      <StaticRow label="Albums" accent="bg-primary" items={albums} />
+
+      {/* EPs — statique */}
+      <StaticRow label="EPs" accent="bg-secondary" items={eps} />
+
+      {/* Singles — défilement auto */}
+      {singles.length > 0 && (
         <div>
-          <h3 className="font-headline text-3xl font-black tracking-tighter mb-6">EPs</h3>
-          <div className="space-y-6">
-            {eps.map((ep) => (
-              <Link
-                key={ep.id}
-                href={`/album/${ep.slug}`}
-                className="flex justify-between items-center group cursor-pointer"
-              >
-                <span className="font-headline font-bold text-on-surface group-hover:text-primary transition-colors">
-                  {ep.title}
-                </span>
-                <span className="font-label text-[10px] text-on-surface-variant">{ep.year}</span>
-              </Link>
-            ))}
+          <div className="flex items-center gap-2 mb-4 px-6 md:px-12">
+            <span className="w-1 h-4 rounded-full bg-error" />
+            <p className="font-label text-[11px] uppercase tracking-[0.25em] text-on-surface font-bold">Singles</p>
+            <span className="font-mono text-[11px] text-on-surface-variant/40 ml-2">{singles.length}</span>
+          </div>
+
+          <div className="relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 z-10 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+
+            <div
+              className="flex gap-3 w-max px-4"
+              style={{ animation: `discog-scroll ${singles.length * 4}s linear infinite` }}
+            >
+              {singlesLoop.map((r, i) => (
+                <button
+                  key={`${r.id}-${i}`}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container group transition-colors shrink-0 text-left"
+                  onClick={() => onPlay(r)}
+                >
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-surface-container">
+                    <Image src={r.coverArt} alt={r.title} fill className="object-cover" unoptimized />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
+                      <MaterialIcon name="play_arrow" filled className="text-xl text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-headline font-bold text-sm text-on-surface group-hover:text-primary transition-colors truncate max-w-[140px] leading-tight">
+                      {r.title}
+                    </p>
+                    <p className="font-label text-[10px] text-on-surface-variant/40 uppercase tracking-wider mt-1">
+                      {r.year}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-outline-variant/10">
-          <Link
-            href="/discography"
-            className="block w-full py-3 text-center rounded-full border border-outline-variant/30 font-label text-xs font-bold uppercase tracking-widest hover:bg-on-surface hover:text-surface transition-all"
-          >
-            Explore Archives
-          </Link>
-        </div>
-      </div>
+      )}
 
-      {/* Singles */}
-      <div className="md:col-span-12 bg-surface-container-high/50 p-8 rounded-2xl">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="font-headline text-3xl font-black tracking-tighter">SINGLES</h3>
-          <Link href="/discography" className="font-label text-xs text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors">
-            View All
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-          {singles.concat(MOCK_RELEASES.filter((r) => r.type !== 'single')).slice(0, 6).map((item) => (
-            <Link
-              key={item.id}
-              href={`/album/${item.slug}`}
-              className="group cursor-pointer"
-            >
-              <div className="aspect-square rounded-lg overflow-hidden bg-surface-container mb-3 relative">
-                <Image
-                  src={item.coverArt}
-                  alt={item.title}
-                  fill
-                  className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                  unoptimized
-                />
-              </div>
-              <h5 className="font-headline font-bold text-sm group-hover:text-primary transition-colors truncate">
-                {item.title}
-              </h5>
-              <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">
-                {item.year}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </div>
+      <style>{`
+        @keyframes discog-scroll {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-33.333%); }
+        }
+      `}</style>
     </section>
   )
 }

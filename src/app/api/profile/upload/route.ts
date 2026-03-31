@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ext = extname(file.name) || '.jpg'
-  const filename = `${field}${ext}`
+  const filename = `${field}_${Date.now()}${ext}`
   const filePath = join(PROFILE_IMAGES_DIR, filename)
 
   const buffer = Buffer.from(await file.arrayBuffer())

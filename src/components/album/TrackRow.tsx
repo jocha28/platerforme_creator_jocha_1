@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Track } from '@/types'
-import { formatDuration, formatPlays, cn } from '@/lib/utils'
+import { formatDuration, formatPlays, cn, getSingleCertification } from '@/lib/utils'
 import MaterialIcon from '@/components/ui/MaterialIcon'
+import CertificationDisc from '@/components/ui/CertificationDisc'
 import { usePlaylist } from '@/context/PlaylistContext'
 
 interface TrackRowProps {
@@ -91,7 +92,7 @@ export default function TrackRow({
       </div>
 
       {/* Title + album */}
-      <div className="col-span-7 md:col-span-6">
+      <div className="col-span-7 md:col-span-5">
         <div className="flex items-center gap-2">
           <h4
             className={cn(
@@ -116,8 +117,24 @@ export default function TrackRow({
         {formatPlays(playCount ?? track.plays)}
       </div>
 
+      {/* Certification */}
+      <div className="hidden md:flex col-span-2 items-center justify-center">
+        {(() => {
+          const cert = getSingleCertification(playCount ?? track.plays)
+          if (!cert) return <span className="font-label text-[9px] text-on-surface-variant/20">—</span>
+          return (
+            <span title={`Disque de ${cert.label}`} className="flex items-center gap-1.5">
+              <CertificationDisc type={cert.disc} size={26} />
+              <span className={`font-label text-[9px] uppercase tracking-wider hidden lg:block ${cert.color}`}>
+                {cert.label}
+              </span>
+            </span>
+          )
+        })()}
+      </div>
+
       {/* Duration + favorite + add to playlist */}
-      <div className="col-span-4 md:col-span-3 text-right flex items-center justify-end gap-3">
+      <div className="col-span-4 md:col-span-2 text-right flex items-center justify-end gap-3">
         <button
           onClick={(e) => { e.stopPropagation(); onFavorite(track.id) }}
           className={cn(

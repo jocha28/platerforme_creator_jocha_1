@@ -17,16 +17,10 @@ const DEFAULT_SINGLES_PLAYLIST: Playlist = {
   createdAt: 0,
 }
 
-function getPlaylists(): Playlist[] {
+export function getPlaylists(): Playlist[] {
   const stored = readStore<Playlist[]>('playlists.json', [])
   const hasSingles = stored.some((p) => p.id === DEFAULT_SINGLES_PLAYLIST.id)
-  if (hasSingles) {
-    return stored.map((p) =>
-      p.id === DEFAULT_SINGLES_PLAYLIST.id
-        ? { ...p, trackIds: SINGLE_IDS, description: DEFAULT_SINGLES_PLAYLIST.description }
-        : p
-    )
-  }
+  if (hasSingles) return stored
   return [DEFAULT_SINGLES_PLAYLIST, ...stored]
 }
 

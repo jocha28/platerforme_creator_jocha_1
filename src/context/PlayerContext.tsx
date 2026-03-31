@@ -57,7 +57,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   // Charger la session sauvegardée (côté client uniquement)
   const savedSession = typeof window !== 'undefined' ? loadSession() : null
   const savedTrack = savedSession ? JOCHA_TRACKS.find(t => t.id === savedSession.trackId) ?? null : null
-  const savedQueue = savedSession ? savedSession.queueIds.map(id => JOCHA_TRACKS.find(t => t.id === id)).filter(Boolean) as Track[] : []
+  const savedQueueRaw = savedSession ? savedSession.queueIds.map(id => JOCHA_TRACKS.find(t => t.id === id)).filter(Boolean) as Track[] : []
+  // Re-trier par trackNumber si tous les titres viennent du même album
+  const savedQueue = savedQueueRaw.length > 0 && savedQueueRaw.every(t => t.albumId === savedQueueRaw[0].albumId)
+    ? [...savedQueueRaw].sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
+    : savedQueueRaw
 
   const [currentTrack, setCurrentTrack] = useState<Track | null>(savedTrack)
   const [isPlaying, setIsPlaying] = useState(false)

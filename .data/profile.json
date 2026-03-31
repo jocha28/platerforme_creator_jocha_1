@@ -1,0 +1,24 @@
+{
+  "name": "Jocha",
+  "coverPhoto": "/api/profile/images/coverPhoto_1774719025669.jpg",
+  "avatar": "/api/profile/images/avatar_1774718955404.jpg",
+  "bio": "Jocha est un Développeur et Producteur de la génération 2020s, dont l'univers sonore se situe au carrefour du conscious hip-hop, du drill et du cloud rap. Artiste inclassable, il a bâti une discographie dense et cohérente autour d'une identité forte : celle d'un développeur qui rappe, ou d'un rappeur qui code.\n\nDepuis ses débuts, Jocha impose un style reconnaissable — des flows tranchants sur des productions sombres, des textes qui parlent en termes de commits, de bugs, de logs et de serveurs, mais pour raconter des histoires profondément humaines : l'ambition, la résistance, la solitude numérique, la quête de sens.\n\n« J'fais du code propre, mental sale / J'rap comme un log d'erreur brutal. »\n\nSa discographie compte 134 titres répartis entre 97 singles, deux albums (Bug Royal, Cas Isolé) et un EP (Jeune Vieux), tous sortis entre 2025 et 2026. Chaque projet est une couche supplémentaire d'un même projet artistique — construire une œuvre qui fait du sens là où d'autres chassent les views et la hype.\n\nSes influences vont de Kendrick Lamar au rap français le plus consciencieux, tout en développant un langage propre — celui d'une génération qui pense en binaire et ressent en storm.",
+  "genres": [
+    "Conscious Hip-Hop",
+    "French Rap",
+    "Cloud Rap",
+    "Drill",
+    "Dark Trap",
+    "Trap",
+    "Emo Rap",
+    "Underground Rap"
+  ],
+  "location": "Cotonou, Bénin",
+  "website": "",
+  "yearsActive": "2025",
+  "artistPick": {
+    "releaseSlug": "ether-et-bitume",
+    "backgroundPhoto": "/api/profile/images/artistPickBackground_1774718923139.png",
+    "description": "Nouvelle Album Disponible"
+  }
+}

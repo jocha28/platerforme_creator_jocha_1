@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useArtist, ArtistProfile } from '@/context/ArtistContext'
+import { MOCK_RELEASES } from '@/data/releases'
 import MaterialIcon from '@/components/ui/MaterialIcon'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
+  const pickBgInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
@@ -37,7 +39,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
     setForm((f) => ({ ...f, [key]: value }))
   }
 
-  async function uploadImage(file: File, field: 'avatar' | 'coverPhoto'): Promise<string | null> {
+  async function uploadImage(file: File, field: string): Promise<string | null> {
     const fd = new FormData()
     fd.append('file', file)
     fd.append('field', field)
@@ -65,6 +67,24 @@ export default function EditProfileModal({ open, onClose }: Props) {
     e.target.value = ''
     const url = await uploadImage(file, 'coverPhoto')
     if (url) set('coverPhoto', url)
+  }
+
+  async function handlePickBgChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    const url = await uploadImage(file, 'artistPickBackground')
+    if (url) setPickField('backgroundPhoto', url)
+  }
+
+  function setPickField<K extends keyof NonNullable<ArtistProfile['artistPick']>>(
+    key: K,
+    value: NonNullable<ArtistProfile['artistPick']>[K]
+  ) {
+    setForm((f) => ({
+      ...f,
+      artistPick: { releaseSlug: '', backgroundPhoto: '', description: '', ...f.artistPick, [key]: value },
+    }))
   }
 
   function addGenre() {
@@ -282,6 +302,73 @@ export default function EditProfileModal({ open, onClose }: Props) {
               </button>
             </div>
             <p className="font-label text-[10px] text-on-surface-variant/50 mt-2">Entrée ou virgule pour valider</p>
+          </div>
+
+          {/* ── Artist Pick ── */}
+          <div className="border-t border-outline-variant/10 pt-6">
+            <p className={cn(labelClass, 'mb-3 text-primary')}>Artist Pick — Mise en avant</p>
+
+            {/* Sortie à mettre en avant */}
+            <div className="mb-4">
+              <label className={labelClass}>Sortie à mettre en avant</label>
+              <select
+                value={form.artistPick?.releaseSlug ?? ''}
+                onChange={(e) => setPickField('releaseSlug', e.target.value)}
+                className={cn(inputClass, 'cursor-pointer')}
+              >
+                <option value="">— Aucune —</option>
+                {MOCK_RELEASES.filter((r) => r.type !== 'single').map((r) => (
+                  <option key={r.id} value={r.slug}>{r.title} ({r.year})</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Photo de fond */}
+            <div className="mb-4">
+              <span className={labelClass}>Photo d'arrière-plan</span>
+              <div
+                className="relative mt-1.5 h-28 rounded-xl overflow-hidden bg-surface-container-high border border-outline-variant/20 cursor-pointer group"
+                onClick={() => pickBgInputRef.current?.click()}
+              >
+                {form.artistPick?.backgroundPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={form.artistPick.backgroundPhoto} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-on-surface-variant/40">
+                    <MaterialIcon name="image" className="text-3xl" />
+                    <span className="font-label text-xs uppercase tracking-wider">Ajouter une photo</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 bg-background/80 backdrop-blur-sm rounded-full font-label text-xs font-bold uppercase tracking-wider text-on-background">
+                    <MaterialIcon name="upload" className="text-sm" />
+                    Modifier
+                  </div>
+                </div>
+                <input ref={pickBgInputRef} type="file" accept="image/*" className="hidden" onChange={handlePickBgChange} />
+              </div>
+              {form.artistPick?.backgroundPhoto && (
+                <button
+                  onClick={() => setPickField('backgroundPhoto', '')}
+                  className="mt-2 flex items-center gap-1.5 text-on-surface-variant hover:text-on-surface font-label text-[10px] uppercase tracking-wider transition-colors"
+                >
+                  <MaterialIcon name="delete" className="text-sm" />
+                  Supprimer la photo
+                </button>
+              )}
+            </div>
+
+            {/* Message / annonce */}
+            <div>
+              <label className={labelClass}>Message / Annonce</label>
+              <textarea
+                value={form.artistPick?.description ?? ''}
+                onChange={(e) => setPickField('description', e.target.value)}
+                rows={3}
+                placeholder="Nouvel album disponible maintenant ! Découvrez…"
+                className={cn(inputClass, 'resize-none')}
+              />
+            </div>
           </div>
         </div>
 

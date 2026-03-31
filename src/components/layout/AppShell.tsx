@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import TopAppBar from './TopAppBar'
 import BottomNavigation from './BottomNavigation'
@@ -8,22 +8,48 @@ import SideNavigation from './SideNavigation'
 import DesktopTopBar from './DesktopTopBar'
 import MiniPlayer from '@/components/player/MiniPlayer'
 import DesktopPlayer from '@/components/player/DesktopPlayer'
+import NowPlayingPanel from '@/components/player/NowPlayingPanel'
 import SplashScreen from '@/components/layout/SplashScreen'
 import { usePlayer } from '@/context/PlayerContext'
-import { cn } from '@/lib/utils'
+import { usePanel } from '@/context/PanelContext'
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { currentTrack } = usePlayer()
+  const { panelOpen, sidebarCollapsed } = usePanel()
   const pathname = usePathname()
   const isNowPlaying = pathname === '/now-playing'
+  const [mounted, setMounted] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
 
-  // Now-playing: sidebar + desktop player visible on lg, nothing on mobile
+  useEffect(() => {
+    setMounted(true)
+    const check = () => setIsDesktop(window.innerWidth >= 1024)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Marges uniquement sur desktop (sidebar cachée sur mobile)
+  const mlStyle = mounted && isDesktop ? (sidebarCollapsed ? 64 : 256) : 0
+  const mrStyle = mounted && isDesktop && currentTrack && panelOpen ? 288 : 0
+
+  // Padding bas adapté : mobile (nav 80 + mini-player ~88) / desktop (player 96)
+  const pbStyle = mounted
+    ? isDesktop
+      ? currentTrack ? 104 : 24
+      : currentTrack ? 176 : 88
+    : 176 // valeur sûre SSR (mobile + player)
+
+  // Now-playing : layout simple
   if (isNowPlaying) {
     return (
       <>
         <SideNavigation />
-        {currentTrack && <DesktopPlayer />}
-        <main className={cn('lg:ml-64', currentTrack ? 'lg:pb-24' : '')}>
+        {mounted && currentTrack && <DesktopPlayer />}
+        <main
+          suppressHydrationWarning
+          style={{ marginLeft: mlStyle, paddingBottom: pbStyle }}
+        >
           {children}
         </main>
       </>
@@ -34,23 +60,25 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <>
       <SplashScreen />
 
-      {/* ── Mobile ── */}
+      {/* Mobile */}
       <TopAppBar />
       <BottomNavigation />
-      {currentTrack && <MiniPlayer />}
+      {mounted && currentTrack && <MiniPlayer />}
 
-      {/* ── Desktop ── */}
+      {/* Desktop */}
       <SideNavigation />
       <DesktopTopBar />
-      {currentTrack && <DesktopPlayer />}
+      {mounted && currentTrack && <DesktopPlayer />}
+      {mounted && currentTrack && panelOpen && <NowPlayingPanel />}
 
-      {/* ── Content ── */}
+      {/* Contenu principal — marges via style inline pour éviter le mismatch SSR/client */}
       <main
-        className={cn(
-          'lg:ml-64',
-          currentTrack ? 'lg:pb-28' : 'lg:pb-6',
-          currentTrack ? 'pb-40 md:pb-28' : 'pb-20 md:pb-4',
-        )}
+        suppressHydrationWarning
+        style={{
+          marginLeft: mlStyle,
+          marginRight: mrStyle,
+          paddingBottom: pbStyle,
+        }}
       >
         {children}
       </main>

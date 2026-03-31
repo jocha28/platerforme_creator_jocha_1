@@ -7,8 +7,9 @@ import { usePlaylist } from '@/context/PlaylistContext'
 import { usePlayer } from '@/context/PlayerContext'
 import { useAdmin } from '@/context/AdminContext'
 import { JOCHA_TRACKS } from '@/data/tracks'
-import { formatDuration } from '@/lib/utils'
+import { formatDuration, getSingleCertification } from '@/lib/utils'
 import MaterialIcon from '@/components/ui/MaterialIcon'
+import CertificationDisc from '@/components/ui/CertificationDisc'
 import { cn } from '@/lib/utils'
 
 interface PageProps {
@@ -215,7 +216,8 @@ export default function PlaylistDetailPage({ params }: PageProps) {
               {/* Header */}
               <div className="hidden md:grid grid-cols-12 px-6 py-4 text-on-surface-variant uppercase tracking-widest text-[10px] font-bold opacity-60">
                 <div className="col-span-1">#</div>
-                <div className="col-span-7">Titre</div>
+                <div className="col-span-5">Titre</div>
+                <div className="col-span-2 text-center">Certification</div>
                 <div className="col-span-3 text-right">Durée</div>
                 <div className="col-span-1 text-right">Retirer</div>
               </div>
@@ -254,7 +256,7 @@ export default function PlaylistDetailPage({ params }: PageProps) {
                       </div>
 
                       {/* Cover + Title */}
-                      <div className="col-span-7 flex items-center gap-3">
+                      <div className="col-span-5 flex items-center gap-3">
                         <div className="w-10 h-10 rounded-md overflow-hidden shrink-0 relative">
                           <Image
                             src={track.albumArt}
@@ -273,6 +275,22 @@ export default function PlaylistDetailPage({ params }: PageProps) {
                           </h4>
                           <p className="font-body text-xs text-on-surface-variant truncate">{track.albumTitle}</p>
                         </div>
+                      </div>
+
+                      {/* Certification */}
+                      <div className="hidden md:flex col-span-2 items-center justify-center">
+                        {(() => {
+                          const cert = getSingleCertification(playCounts[track.id] ?? 0)
+                          if (!cert) return <span className="font-label text-[9px] text-on-surface-variant/20">—</span>
+                          return (
+                            <span title={`Disque de ${cert.label}`} className="flex items-center gap-1.5">
+                              <CertificationDisc type={cert.disc} size={26} />
+                              <span className={`font-label text-[9px] uppercase tracking-wider hidden lg:block ${cert.color}`}>
+                                {cert.label}
+                              </span>
+                            </span>
+                          )
+                        })()}
                       </div>
 
                       {/* Duration + favorite */}

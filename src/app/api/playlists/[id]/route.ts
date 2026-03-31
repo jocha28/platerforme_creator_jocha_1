@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readStore, writeStore } from '@/lib/server-store'
+import { writeStore } from '@/lib/server-store'
 import { Playlist } from '@/types'
+import { getPlaylists } from '@/app/api/playlists/route'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-function getPlaylists(): Playlist[] {
-  return readStore<Playlist[]>('playlists.json', [])
-}
 
 export async function PATCH(
   req: NextRequest,

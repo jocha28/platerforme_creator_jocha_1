@@ -35,7 +35,7 @@ export default function MiniPlayer() {
   }
 
   return (
-    <div className="lg:hidden fixed bottom-20 md:bottom-0 left-0 right-0 z-[60] px-4 pb-4 md:pb-6 animate-slide-up">
+    <div className="lg:hidden fixed bottom-20 left-0 right-0 z-[60] px-3 pb-3 animate-slide-up">
       <div className="max-w-6xl mx-auto bg-surface-container/90 backdrop-blur-2xl rounded-full md:rounded-xl shadow-[0_-4px_40px_rgba(0,0,0,0.6)] border border-outline-variant/10 overflow-hidden">
         {/* Progress Bar */}
         <div

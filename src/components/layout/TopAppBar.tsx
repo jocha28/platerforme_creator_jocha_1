@@ -19,7 +19,7 @@ export default function TopAppBar() {
         </Link>
       </div>
       <div className="flex items-center gap-4">
-        <Link href="/search" className="hidden md:block text-on-surface-variant hover:text-on-surface transition-colors">
+        <Link href="/search" className="text-on-surface-variant hover:text-on-surface transition-colors">
           <span className="material-symbols-outlined text-[22px]">search</span>
         </Link>
         <Avatar

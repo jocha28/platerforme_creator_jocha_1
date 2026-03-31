@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePlayer } from '@/context/PlayerContext'
-import { formatDuration } from '@/lib/utils'
+import { useArtist } from '@/context/ArtistContext'
+import { formatDuration, formatPlays } from '@/lib/utils'
+import { JOCHA_TRACKS } from '@/data/tracks'
 import MaterialIcon from '@/components/ui/MaterialIcon'
 import { cn } from '@/lib/utils'
 import { getLyrics, getCurrentLineIndex } from '@/data/lyrics'
@@ -24,7 +26,9 @@ const WAVEFORM_COUNT = 40
 
 export default function NowPlayingPage() {
   const router = useRouter()
+  const { profile } = useArtist()
   const [lyricsOpen, setLyricsOpen] = useState(false)
+  const [showArtist, setShowArtist] = useState(false)
   const mobileLyricsRef = useRef<HTMLDivElement>(null)
   const mobileActiveRef = useRef<HTMLParagraphElement>(null)
   const desktopActiveRef = useRef<HTMLParagraphElement>(null)
@@ -46,6 +50,8 @@ export default function NowPlayingPage() {
     toggleRepeat,
     toggleFavorite,
     queue,
+    play,
+    playCounts,
   } = usePlayer()
 
   useEffect(() => {
@@ -72,7 +78,8 @@ export default function NowPlayingPage() {
   const waveform = buildWaveform(WAVEFORM_COUNT, currentTrack.id)
   const waveProgressIdx = Math.floor((progress / 100) * WAVEFORM_COUNT)
 
-  const upNext = queue.filter((t) => t.id !== currentTrack.id).slice(0, 3)
+  const currentIdx = queue.findIndex((t) => t.id === currentTrack.id)
+  const upNext = queue.slice(currentIdx + 1, currentIdx + 4)
 
   // Desktop: 3-line window (1 before active, active, 2 after) — non-empty lines only
   const desktopLyrics = lyrics
@@ -256,19 +263,70 @@ export default function NowPlayingPage() {
               <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-4">Suivant dans la file</p>
               <div className="space-y-2">
                 {upNext.map((track) => (
-                  <div key={track.id} className="flex items-center gap-3 opacity-60 hover:opacity-100 transition-opacity">
+                  <button
+                    key={track.id}
+                    onClick={() => play(track, queue)}
+                    className="w-full flex items-center gap-3 opacity-60 hover:opacity-100 transition-opacity group text-left"
+                  >
                     <div className="w-10 h-10 rounded-lg overflow-hidden relative shrink-0">
                       <Image src={track.albumArt} alt={track.title} fill className="object-cover" unoptimized />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-headline font-bold text-xs truncate">{track.title}</p>
+                      <p className="font-headline font-bold text-xs truncate group-hover:text-primary transition-colors">{track.title}</p>
                       <p className="font-label text-[10px] text-on-surface-variant">{formatDuration(track.duration)}</p>
                     </div>
-                  </div>
+                    <MaterialIcon name="play_arrow" className="text-on-surface-variant opacity-0 group-hover:opacity-100 text-sm transition-opacity shrink-0" />
+                  </button>
                 ))}
               </div>
             </div>
           )}
+
+          {/* À propos de l'artiste — mobile */}
+          <div className="mb-8">
+            <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-4">À propos de l&apos;artiste</p>
+            <button onClick={() => setShowArtist(true)} className="w-full text-left rounded-2xl overflow-hidden bg-surface-container hover:brightness-110 transition-all">
+              {/* Bannière */}
+              <div className="relative h-32 w-full">
+                {profile.coverPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.coverPhoto} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/5 to-secondary/10" />
+                )}
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-container to-transparent" />
+              </div>
+              <div className="px-5 pb-5 -mt-8 relative">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-surface-container shadow-xl bg-surface-container-high mb-3">
+                  {profile.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MaterialIcon name="person" className="text-on-surface-variant/40 text-2xl" />
+                    </div>
+                  )}
+                </div>
+                <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary mb-0.5">Artiste Vérifié</p>
+                <h3 className="font-headline text-2xl font-black tracking-tighter text-on-background uppercase mb-1">{profile.name}</h3>
+                <p className="font-label text-xs text-on-surface-variant mb-3">
+                  {formatPlays(JOCHA_TRACKS.reduce((s, t) => s + (playCounts[t.id] ?? 0), 0))} écoutes totales
+                </p>
+                {profile.bio && (
+                  <p className="font-body text-sm text-on-surface-variant leading-relaxed line-clamp-4 mb-4">{profile.bio}</p>
+                )}
+                {profile.genres.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {profile.genres.map((tag) => (
+                      <span key={tag} className="px-3 py-1 bg-surface-container-high rounded-full font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -398,13 +456,14 @@ export default function NowPlayingPage() {
 
           {/* Up Next */}
           {upNext.length > 0 && (
-            <div>
+            <div className="mb-14">
               <h3 className="text-[10px] uppercase tracking-[0.3em] text-on-surface-variant font-bold font-label mb-4">Up Next</h3>
               <div className="space-y-3">
                 {upNext.map((track, i) => (
-                  <div
+                  <button
                     key={track.id}
-                    className="flex items-center justify-between p-4 bg-surface-container-low hover:bg-surface-container transition-colors rounded-xl cursor-pointer"
+                    onClick={() => play(track, queue)}
+                    className="w-full flex items-center justify-between p-4 bg-surface-container-low hover:bg-surface-container transition-colors rounded-xl group text-left"
                   >
                     <div className="flex items-center gap-4">
                       <span className="text-xs font-bold text-on-surface-variant w-4">{String(i + 2).padStart(2, '0')}</span>
@@ -412,18 +471,143 @@ export default function NowPlayingPage() {
                         <Image src={track.albumArt} alt={track.title} fill className="object-cover" unoptimized />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-on-surface uppercase tracking-tight">{track.title}</p>
+                        <p className="text-sm font-bold text-on-surface uppercase tracking-tight group-hover:text-primary transition-colors">{track.title}</p>
                         <p className="text-xs text-on-surface-variant">{track.artist}</p>
                       </div>
                     </div>
-                    <span className="text-xs text-on-surface-variant font-bold">{formatDuration(track.duration)}</span>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-on-surface-variant font-bold">{formatDuration(track.duration)}</span>
+                      <MaterialIcon name="play_arrow" className="text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </button>
                 ))}
               </div>
             </div>
           )}
+
+          {/* À propos de l'artiste — desktop */}
+          <div>
+            <h3 className="text-[10px] uppercase tracking-[0.3em] text-on-surface-variant font-bold font-label mb-4">À propos de l&apos;artiste</h3>
+            <button onClick={() => setShowArtist(true)} className="w-full text-left rounded-2xl overflow-hidden bg-surface-container-low hover:brightness-110 transition-all">
+              {/* Bannière */}
+              <div className="relative h-36 w-full">
+                {profile.coverPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.coverPhoto} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 via-primary/5 to-secondary/10" />
+                )}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-surface-container-low to-transparent" />
+              </div>
+              <div className="px-6 pb-6 -mt-8 relative">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-surface-container-low shadow-xl bg-surface-container-high mb-3">
+                  {profile.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MaterialIcon name="person" className="text-on-surface-variant/40 text-2xl" />
+                    </div>
+                  )}
+                </div>
+                <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary mb-0.5">Artiste Vérifié</p>
+                <h3 className="font-headline text-2xl font-black tracking-tighter text-on-background uppercase mb-1">{profile.name}</h3>
+                <p className="font-label text-xs text-on-surface-variant mb-3">
+                  {formatPlays(JOCHA_TRACKS.reduce((s, t) => s + (playCounts[t.id] ?? 0), 0))} écoutes totales
+                </p>
+                {profile.bio && (
+                  <p className="font-body text-sm text-on-surface-variant leading-relaxed line-clamp-4 mb-4">{profile.bio}</p>
+                )}
+                {profile.genres.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {profile.genres.map((tag) => (
+                      <span key={tag} className="px-3 py-1 bg-surface-container rounded-full font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
         </section>
       </div>
+
+      {/* Popup artiste */}
+      {showArtist && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setShowArtist(false)} />
+          <div className="relative z-10 w-full max-w-md max-h-[85vh] flex flex-col bg-surface-container rounded-2xl shadow-2xl overflow-hidden">
+            <div className="relative h-40 shrink-0">
+              {profile.coverPhoto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.coverPhoto} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary/30 via-primary/10 to-secondary/20" />
+              )}
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-surface-container to-transparent" />
+              <button
+                onClick={() => setShowArtist(false)}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center text-on-surface hover:bg-background/80 transition-colors"
+              >
+                <MaterialIcon name="close" className="text-sm" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar px-6 pb-6 -mt-10 relative">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-surface-container shadow-xl bg-surface-container-high mb-3">
+                {profile.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <MaterialIcon name="person" className="text-on-surface-variant/40 text-3xl" />
+                  </div>
+                )}
+              </div>
+              <p className="font-label text-[10px] uppercase tracking-[0.3em] text-primary mb-1">Artiste Vérifié</p>
+              <h2 className="font-headline text-3xl font-black tracking-tighter text-on-background uppercase leading-none mb-1">{profile.name}</h2>
+              {profile.location && (
+                <p className="flex items-center gap-1.5 font-label text-xs text-on-surface-variant mb-4">
+                  <MaterialIcon name="location_on" className="text-sm" />
+                  {profile.location}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <div className="bg-surface-container-high rounded-xl p-4">
+                  <p className="font-headline text-2xl font-black tracking-tighter text-on-background">
+                    {formatPlays(JOCHA_TRACKS.reduce((s, t) => s + (playCounts[t.id] ?? 0), 0))}
+                  </p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mt-0.5">Écoutes</p>
+                </div>
+                <div className="bg-surface-container-high rounded-xl p-4">
+                  <p className="font-headline text-2xl font-black tracking-tighter text-on-background">{JOCHA_TRACKS.length}</p>
+                  <p className="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mt-0.5">Titres</p>
+                </div>
+              </div>
+              {profile.bio && (
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-5">{profile.bio}</p>
+              )}
+              {profile.genres.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {profile.genres.map((tag) => (
+                    <span key={tag} className="px-3 py-1 bg-surface-container rounded-full font-label text-[10px] uppercase tracking-widest text-on-surface-variant">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <Link
+                href="/profile"
+                onClick={() => setShowArtist(false)}
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-full border border-outline-variant/30 font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:bg-surface-container-high transition-colors"
+              >
+                <MaterialIcon name="person" className="text-sm" />
+                Voir le profil complet
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

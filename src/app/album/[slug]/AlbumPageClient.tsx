@@ -5,7 +5,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Album } from '@/types'
 import { usePlayer } from '@/context/PlayerContext'
-import { formatDuration, formatPlays } from '@/lib/utils'
+import { formatDuration, formatPlays, getAlbumCertification } from '@/lib/utils'
+import CertificationDisc from '@/components/ui/CertificationDisc'
 import TrackRow from '@/components/album/TrackRow'
 import MaterialIcon from '@/components/ui/MaterialIcon'
 import { JOCHA_TRACKS } from '@/data/tracks'
@@ -105,6 +106,24 @@ export default function AlbumPageClient({ album }: { album: Album }) {
                 <span className="font-label text-sm text-on-surface-variant">
                   {formatPlays(totalPlays)} plays
                 </span>
+                {(() => {
+                  const cert = getAlbumCertification(totalPlays)
+                  if (!cert) return null
+                  const prefix = cert.count > 1
+                    ? ['', 'Double', 'Triple', 'Quadruple'][cert.count] + ' '
+                    : ''
+                  return (
+                    <>
+                      <span className="w-1 h-1 bg-outline-variant/40 rounded-full" />
+                      <span className={`flex items-center gap-1.5 font-label text-sm font-bold ${cert.color}`} title={`${prefix}${cert.label}`}>
+                        {Array.from({ length: cert.count }).map((_, i) => (
+                          <CertificationDisc key={i} type={cert.disc} size={22} />
+                        ))}
+                        <span className="hidden md:inline">{prefix}{cert.label}</span>
+                      </span>
+                    </>
+                  )
+                })()}
               </div>
             </div>
 
@@ -134,9 +153,10 @@ export default function AlbumPageClient({ album }: { album: Album }) {
           {/* Header */}
           <div className="hidden md:grid grid-cols-12 px-6 py-4 text-on-surface-variant uppercase tracking-widest text-[10px] font-bold opacity-60">
             <div className="col-span-1">#</div>
-            <div className="col-span-6">Titre</div>
+            <div className="col-span-5">Titre</div>
             <div className="col-span-2 text-right">Plays</div>
-            <div className="col-span-3 text-right">Durée</div>
+            <div className="col-span-2 text-center">Certification</div>
+            <div className="col-span-2 text-right">Durée</div>
           </div>
 
           <div className="space-y-1 md:space-y-2">
