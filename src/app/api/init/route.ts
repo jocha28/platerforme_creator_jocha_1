@@ -1,15 +1,12 @@
-'use client'
+import { NextResponse } from 'next/server'
+import { readStore } from '@/lib/server-store'
+import { ArtistProfile, Playlist } from '@/types'
+import { JOCHA_TRACKS } from '@/data/tracks'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { ArtistProfile } from '@/types'
-import { getInitData, invalidateInitCache } from '@/lib/init-fetch'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-export type { ArtistProfile }
-
-interface ArtistContextValue {
-  profile: ArtistProfile
-  updateProfile: (updates: Partial<ArtistProfile>) => Promise<void>
-}
+const SINGLE_IDS = JOCHA_TRACKS.filter((t) => t.albumId === 'singles').map((t) => t.id)
 
 const DEFAULT_PROFILE: ArtistProfile = {
   name: 'Jocha',
@@ -22,36 +19,25 @@ const DEFAULT_PROFILE: ArtistProfile = {
   yearsActive: '2025',
 }
 
-const ArtistContext = createContext<ArtistContextValue | null>(null)
-
-export function ArtistProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<ArtistProfile>(DEFAULT_PROFILE)
-
-  // Charger le profil via le cache init partagé (un seul appel HTTP)
-  useEffect(() => {
-    getInitData().then(({ profile }) => { if (profile) setProfile(profile) })
-  }, [])
-
-  async function updateProfile(updates: Partial<ArtistProfile>): Promise<void> {
-    const next = { ...profile, ...updates }
-    setProfile(next)
-    await fetch('/api/profile', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates),
-    }).catch(() => {})
-    invalidateInitCache()
-  }
-
-  return (
-    <ArtistContext.Provider value={{ profile, updateProfile }}>
-      {children}
-    </ArtistContext.Provider>
-  )
+const DEFAULT_SINGLES_PLAYLIST: Playlist = {
+  id: 'pl-singles-jocha',
+  name: 'Singles de Jocha',
+  description: `${SINGLE_IDS.length} singles officiels`,
+  cover: JOCHA_TRACKS.find((t) => t.albumId === 'singles')?.albumArt,
+  trackIds: SINGLE_IDS,
+  createdAt: 0,
 }
 
-export function useArtist() {
-  const ctx = useContext(ArtistContext)
-  if (!ctx) throw new Error('useArtist must be used inside ArtistProvider')
-  return ctx
+export function GET() {
+  const playCounts = readStore<Record<string, number>>('play-counts.json', {})
+  const profile    = readStore<ArtistProfile>('profile.json', DEFAULT_PROFILE)
+
+  const storedPlaylists = readStore<Playlist[]>('playlists.json', [])
+  const hasSingles = storedPlaylists.some((p) => p.id === DEFAULT_SINGLES_PLAYLIST.id)
+  const playlists  = hasSingles ? storedPlaylists : [DEFAULT_SINGLES_PLAYLIST, ...storedPlaylists]
+
+  return NextResponse.json(
+    { playCounts, profile, playlists },
+    { headers: { 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30' } }
+  )
 }

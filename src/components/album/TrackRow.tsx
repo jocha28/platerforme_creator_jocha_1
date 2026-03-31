@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { Track } from '@/types'
 import { formatDuration, formatPlays, cn, getSingleCertification } from '@/lib/utils'
 import MaterialIcon from '@/components/ui/MaterialIcon'
@@ -144,6 +145,14 @@ export default function TrackRow({
         >
           <MaterialIcon name="favorite" filled={isFavorite} className="text-xl" />
         </button>
+        <Link
+          href={`/lyrics/${track.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="hidden md:block text-on-surface-variant/40 hover:text-primary transition-colors"
+          title="Voir les paroles"
+        >
+          <MaterialIcon name="lyrics" className="text-lg" />
+        </Link>
         <span className="font-label text-sm text-on-surface-variant hidden md:block">
           {formatDuration(track.duration)}
         </span>

@@ -10,11 +10,13 @@ import { usePlayer } from '@/context/PlayerContext'
 import LogoOwl from '@/components/ui/LogoOwl'
 
 const NAV_ITEMS = [
-  { label: 'Home',           icon: 'home_max',       href: '/'               },
-  { label: 'Search',         icon: 'search',         href: '/search'         },
-  { label: 'Library',        icon: 'album',          href: '/library'        },
+  { label: 'Home',           icon: 'home_max',          href: '/'               },
+  { label: 'Explorer',       icon: 'explore',           href: '/explore'        },
+  { label: 'Tous les sons',  icon: 'queue_music',       href: '/songs'          },
+  { label: 'Search',         icon: 'search',            href: '/search'         },
+  { label: 'Library',        icon: 'album',             href: '/library'        },
   { label: 'Certifications', icon: 'workspace_premium', href: '/certifications' },
-  { label: 'Profile',        icon: 'person',         href: '/profile'        },
+  { label: 'Profile',        icon: 'person',            href: '/profile'        },
 ]
 
 export default function SideNavigation() {

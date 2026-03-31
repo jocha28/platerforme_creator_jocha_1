@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Playlist } from '@/types'
+import { getInitData, invalidateInitCache } from '@/lib/init-fetch'
 
 export type { Playlist }
 
@@ -20,12 +21,9 @@ const PlaylistContext = createContext<PlaylistContextValue | null>(null)
 export function PlaylistProvider({ children }: { children: ReactNode }) {
   const [playlists, setPlaylists] = useState<Playlist[]>([])
 
-  // Charger les playlists depuis le serveur au montage
+  // Charger via le cache init partagé (un seul appel HTTP pour toute l'app)
   useEffect(() => {
-    fetch('/api/playlists')
-      .then((r) => r.ok ? r.json() : [])
-      .then((data: Playlist[]) => setPlaylists(data))
-      .catch(() => {})
+    getInitData().then(({ playlists }) => { if (playlists?.length) setPlaylists(playlists) })
   }, [])
 
   async function createPlaylist(name: string): Promise<Playlist> {
@@ -36,12 +34,14 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
     })
     const created: Playlist = await res.json()
     setPlaylists((prev) => [...prev, created])
+    invalidateInitCache()
     return created
   }
 
   function deletePlaylist(id: string) {
     setPlaylists((prev) => prev.filter((p) => p.id !== id))
     fetch(`/api/playlists/${id}`, { method: 'DELETE' }).catch(() => {})
+    invalidateInitCache()
   }
 
   function patchPlaylist(id: string, patch: Partial<Playlist>) {
@@ -51,6 +51,7 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
     }).catch(() => {})
+    invalidateInitCache()
   }
 
   function addToPlaylist(playlistId: string, trackId: string) {

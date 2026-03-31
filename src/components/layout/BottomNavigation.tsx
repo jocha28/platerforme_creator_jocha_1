@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
-  { label: 'Home',   icon: 'home_max',          href: '/'               },
-  { label: 'Search', icon: 'search',             href: '/search'         },
-  { label: 'Certifs',icon: 'workspace_premium',  href: '/certifications' },
-  { label: 'Library',icon: 'album',              href: '/library'        },
-  { label: 'Profile',icon: 'person',             href: '/profile'        },
+  { label: 'Home',    icon: 'home_max',    href: '/'        },
+  { label: 'Explorer',icon: 'explore',     href: '/explore' },
+  { label: 'Sons',    icon: 'queue_music', href: '/songs'   },
+  { label: 'Search',  icon: 'search',      href: '/search'  },
+  { label: 'Profile', icon: 'person',      href: '/profile' },
 ]
 
 export default function BottomNavigation() {

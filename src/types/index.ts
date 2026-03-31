@@ -57,6 +57,16 @@ export interface Playlist {
   description?: string
 }
 
+export interface Annotation {
+  id: string
+  trackId: string
+  lineIndex: number       // index de la ligne dans les paroles
+  selectedText: string    // le passage annoté
+  body: string            // le texte de l'annotation
+  author: string
+  createdAt: number
+}
+
 export type TabId = 'latest' | 'albums' | 'mixtapes' | 'eps' | 'singles'
 
 export interface NavItem {

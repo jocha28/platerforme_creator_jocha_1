@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react'
 import { Track } from '@/types'
 import { JOCHA_TRACKS } from '@/data/tracks'
+import { getInitData } from '@/lib/init-fetch'
 
 const STORAGE_KEY = 'jocha_player_session'
 
@@ -92,12 +93,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => { isShuffleRef.current = isShuffle }, [isShuffle])
   useEffect(() => { isRepeatRef.current = isRepeat }, [isRepeat])
 
-  // Charger les play counts depuis le serveur après montage
+  // Charger les play counts via le cache init partagé (un seul appel HTTP)
   useEffect(() => {
-    fetch('/api/play-counts')
-      .then((r) => r.ok ? r.json() : {})
-      .then((data: Record<string, number>) => setPlayCounts(data))
-      .catch(() => {})
+    getInitData().then(({ playCounts }) => { if (playCounts) setPlayCounts(playCounts) })
   }, [])
 
   // Précharger le prochain son immédiatement après le démarrage du son actuel
