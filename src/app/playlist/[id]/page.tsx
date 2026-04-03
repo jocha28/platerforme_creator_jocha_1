@@ -10,7 +10,13 @@ import { JOCHA_TRACKS } from '@/data/tracks'
 import { formatDuration, getSingleCertification } from '@/lib/utils'
 import MaterialIcon from '@/components/ui/MaterialIcon'
 import CertificationDisc from '@/components/ui/CertificationDisc'
+import SystemPlaylistCover from '@/components/ui/SystemPlaylistCover'
 import { cn } from '@/lib/utils'
+
+const SYSTEM_IDS = new Set([
+  'pl-singles-jocha', 'pl-albums-jocha', 'pl-eps-jocha', 'pl-catalogue-jocha',
+  'pl-daily-drill', 'pl-daily-trap', 'pl-daily-conscious', 'pl-daily-french', 'pl-daily-cloud',
+])
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -113,30 +119,35 @@ export default function PlaylistDetailPage({ params }: PageProps) {
         </div>
 
         <div className="relative z-10 flex flex-col md:flex-row gap-8 md:gap-12 items-start md:items-end">
-          {/* Cover cliquable pour changer */}
-          <button
-            onClick={openEdit}
-            className="group w-48 md:w-80 lg:w-96 aspect-square bg-surface-container shadow-2xl relative overflow-hidden shrink-0 rounded-lg flex items-center justify-center"
-          >
-            {displayCover ? (
-              <Image
-                src={displayCover}
-                alt={playlist.name}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                unoptimized
-                priority
-              />
-            ) : (
-              <span className="material-symbols-outlined text-7xl text-on-surface-variant/20">
-                queue_music
-              </span>
-            )}
-            {/* Overlay modifier */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-              <MaterialIcon name="edit" className="text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          {/* Cover */}
+          {SYSTEM_IDS.has(playlist.id) ? (
+            <div className="w-48 md:w-80 lg:w-96 shrink-0 shadow-2xl rounded-lg overflow-hidden">
+              <SystemPlaylistCover playlist={playlist} />
             </div>
-          </button>
+          ) : (
+            <button
+              onClick={openEdit}
+              className="group w-48 md:w-80 lg:w-96 aspect-square bg-surface-container shadow-2xl relative overflow-hidden shrink-0 rounded-lg flex items-center justify-center"
+            >
+              {displayCover ? (
+                <Image
+                  src={displayCover}
+                  alt={playlist.name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  unoptimized
+                  priority
+                />
+              ) : (
+                <span className="material-symbols-outlined text-7xl text-on-surface-variant/20">
+                  queue_music
+                </span>
+              )}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                <MaterialIcon name="edit" className="text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
+          )}
 
           {/* Metadata */}
           <div className="flex-1 space-y-4 md:space-y-6">

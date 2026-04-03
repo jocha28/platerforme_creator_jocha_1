@@ -20,7 +20,7 @@ export default function DesktopPlayer() {
     volume,
     setVolume,
     isShuffle,
-    isRepeat,
+    repeatMode,
     toggleShuffle,
     toggleRepeat,
     toggleFavorite,
@@ -95,9 +95,9 @@ export default function DesktopPlayer() {
           </button>
           <button
             onClick={toggleRepeat}
-            className={cn('transition-colors', isRepeat ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface')}
+            className={cn('transition-colors', repeatMode !== 'off' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface')}
           >
-            <MaterialIcon name="repeat" />
+            <MaterialIcon name={repeatMode === 'one' ? 'repeat_one' : 'repeat'} />
           </button>
         </div>
 

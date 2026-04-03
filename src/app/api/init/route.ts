@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server'
 import { readStore } from '@/lib/server-store'
-import { ArtistProfile, Playlist } from '@/types'
-import { JOCHA_TRACKS } from '@/data/tracks'
+import { ArtistProfile } from '@/types'
+import { getPlaylists } from '@/app/api/playlists/route'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-
-const SINGLE_IDS = JOCHA_TRACKS.filter((t) => t.albumId === 'singles').map((t) => t.id)
 
 const DEFAULT_PROFILE: ArtistProfile = {
   name: 'Jocha',
@@ -19,22 +17,10 @@ const DEFAULT_PROFILE: ArtistProfile = {
   yearsActive: '2025',
 }
 
-const DEFAULT_SINGLES_PLAYLIST: Playlist = {
-  id: 'pl-singles-jocha',
-  name: 'Singles de Jocha',
-  description: `${SINGLE_IDS.length} singles officiels`,
-  cover: JOCHA_TRACKS.find((t) => t.albumId === 'singles')?.albumArt,
-  trackIds: SINGLE_IDS,
-  createdAt: 0,
-}
-
 export function GET() {
   const playCounts = readStore<Record<string, number>>('play-counts.json', {})
   const profile    = readStore<ArtistProfile>('profile.json', DEFAULT_PROFILE)
-
-  const storedPlaylists = readStore<Playlist[]>('playlists.json', [])
-  const hasSingles = storedPlaylists.some((p) => p.id === DEFAULT_SINGLES_PLAYLIST.id)
-  const playlists  = hasSingles ? storedPlaylists : [DEFAULT_SINGLES_PLAYLIST, ...storedPlaylists]
+  const playlists  = getPlaylists()
 
   return NextResponse.json(
     { playCounts, profile, playlists },

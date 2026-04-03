@@ -78,9 +78,6 @@ export default function CertificationsPage() {
         </div>
 
         <div className="relative z-10 px-6 md:px-12 pt-10 pb-14">
-          <span className="font-label text-[10px] uppercase tracking-[0.35em] text-primary mb-3 block">
-            SNEP adapté
-          </span>
           <h1
             className="font-headline font-black uppercase tracking-tighter leading-none text-on-background mb-3"
             style={{ fontSize: 'clamp(2.8rem, 9vw, 6rem)' }}

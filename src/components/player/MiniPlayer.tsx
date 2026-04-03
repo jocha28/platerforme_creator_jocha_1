@@ -19,7 +19,7 @@ export default function MiniPlayer() {
     volume,
     setVolume,
     isShuffle,
-    isRepeat,
+    repeatMode,
     toggleShuffle,
     toggleRepeat,
   } = usePlayer()
@@ -108,9 +108,9 @@ export default function MiniPlayer() {
             </button>
             <button
               onClick={toggleRepeat}
-              className={`hidden md:block transition-colors ${isRepeat ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`hidden md:block transition-colors ${repeatMode !== 'off' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
-              <MaterialIcon name="repeat" />
+              <MaterialIcon name={repeatMode === 'one' ? 'repeat_one' : 'repeat'} />
             </button>
           </div>
 

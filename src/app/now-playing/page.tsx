@@ -29,6 +29,7 @@ export default function NowPlayingPage() {
   const { profile } = useArtist()
   const [lyricsOpen, setLyricsOpen] = useState(false)
   const [showArtist, setShowArtist] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const mobileLyricsRef = useRef<HTMLDivElement>(null)
   const mobileActiveRef = useRef<HTMLParagraphElement>(null)
   const desktopActiveRef = useRef<HTMLParagraphElement>(null)
@@ -45,7 +46,7 @@ export default function NowPlayingPage() {
     volume,
     setVolume,
     isShuffle,
-    isRepeat,
+    repeatMode,
     toggleShuffle,
     toggleRepeat,
     toggleFavorite,
@@ -55,8 +56,12 @@ export default function NowPlayingPage() {
   } = usePlayer()
 
   useEffect(() => {
-    if (!currentTrack) router.push('/')
-  }, [currentTrack, router])
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (mounted && !currentTrack) router.push('/')
+  }, [currentTrack, router, mounted])
 
   // Mobile lyrics auto-scroll
   useEffect(() => {
@@ -70,7 +75,7 @@ export default function NowPlayingPage() {
     desktopActiveRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [currentTime])
 
-  if (!currentTrack) return null
+  if (!mounted || !currentTrack) return null
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
   const lyrics = getLyrics(currentTrack.id)
@@ -190,8 +195,8 @@ export default function NowPlayingPage() {
             <button onClick={next} className="text-on-surface hover:text-primary transition-colors p-2">
               <MaterialIcon name="skip_next" size="xl" />
             </button>
-            <button onClick={toggleRepeat} className={cn('p-2 transition-colors', isRepeat ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface')}>
-              <MaterialIcon name="repeat" />
+            <button onClick={toggleRepeat} className={cn('p-2 transition-colors', repeatMode !== 'off' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface')}>
+              <MaterialIcon name={repeatMode === 'one' ? 'repeat_one' : 'repeat'} />
             </button>
           </div>
 

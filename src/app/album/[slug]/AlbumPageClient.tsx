@@ -110,7 +110,7 @@ export default function AlbumPageClient({ album }: { album: Album }) {
                   const cert = getAlbumCertification(totalPlays)
                   if (!cert) return null
                   const prefix = cert.count > 1
-                    ? ['', 'Double', 'Triple', 'Quadruple'][cert.count] + ' '
+                    ? ['', '', 'Double', 'Triple', 'Quadruple'][cert.count] + ' '
                     : ''
                   return (
                     <>

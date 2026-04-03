@@ -24,6 +24,24 @@ export default function DesktopTopBar() {
 
   return (
     <header className={`hidden lg:flex fixed top-0 right-0 h-16 z-40 bg-background/80 backdrop-blur-xl border-b border-outline-variant/10 items-center justify-between px-8 transition-all duration-300 ${sidebarCollapsed ? 'left-16' : 'left-64'}`}>
+      {/* Boutons navigation historique */}
+      <div className="flex items-center gap-1 mr-4 shrink-0">
+        <button
+          onClick={() => router.back()}
+          title="Page précédente"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all"
+        >
+          <MaterialIcon name="arrow_back" className="text-lg" />
+        </button>
+        <button
+          onClick={() => window.history.forward()}
+          title="Page suivante"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all"
+        >
+          <MaterialIcon name="arrow_forward" className="text-lg" />
+        </button>
+      </div>
+
       {/* Search */}
       <form onSubmit={handleSearch} className="flex-1 max-w-md">
         <div className="relative">
