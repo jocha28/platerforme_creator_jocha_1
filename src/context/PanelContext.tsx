@@ -7,6 +7,9 @@ interface PanelContextValue {
   togglePanel: () => void
   sidebarCollapsed: boolean
   toggleSidebar: () => void
+  fullscreenOpen: boolean
+  openFullscreen: () => void
+  closeFullscreen: () => void
 }
 
 const PanelContext = createContext<PanelContextValue>({
@@ -14,11 +17,15 @@ const PanelContext = createContext<PanelContextValue>({
   togglePanel: () => {},
   sidebarCollapsed: false,
   toggleSidebar: () => {},
+  fullscreenOpen: false,
+  openFullscreen: () => {},
+  closeFullscreen: () => {},
 })
 
 export function PanelProvider({ children }: { children: ReactNode }) {
   const [panelOpen, setPanelOpen]             = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [fullscreenOpen, setFullscreenOpen]   = useState(false)
 
   useEffect(() => {
     const p = localStorage.getItem('nowPlayingPanelOpen')
@@ -41,8 +48,16 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  function openFullscreen() {
+    setFullscreenOpen(true)
+  }
+
+  function closeFullscreen() {
+    setFullscreenOpen(false)
+  }
+
   return (
-    <PanelContext.Provider value={{ panelOpen, togglePanel, sidebarCollapsed, toggleSidebar }}>
+    <PanelContext.Provider value={{ panelOpen, togglePanel, sidebarCollapsed, toggleSidebar, fullscreenOpen, openFullscreen, closeFullscreen }}>
       {children}
     </PanelContext.Provider>
   )

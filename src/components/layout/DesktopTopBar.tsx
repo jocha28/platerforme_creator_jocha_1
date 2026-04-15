@@ -1,21 +1,26 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import Avatar from '@/components/ui/Avatar'
 import MaterialIcon from '@/components/ui/MaterialIcon'
+import PWAInstallButton from '@/components/pwa/PWAInstallButton'
 import { useArtist } from '@/context/ArtistContext'
 import { usePlayer } from '@/context/PlayerContext'
 import { usePanel } from '@/context/PanelContext'
 
 export default function DesktopTopBar() {
   const router = useRouter()
+  const pathname = usePathname()
   const [query, setQuery] = useState('')
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
   const { profile } = useArtist()
   const { currentTrack } = usePlayer()
   const { panelOpen, togglePanel, sidebarCollapsed } = usePanel()
 
-  function handleSearch(e: React.FormEvent) {
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`)
@@ -61,7 +66,17 @@ export default function DesktopTopBar() {
 
       {/* Right actions */}
       <div className="flex items-center gap-3 ml-6">
-        {currentTrack && !panelOpen && (
+        <PWAInstallButton />
+        {mounted && currentTrack && (
+          <Link
+            href="/queue"
+            title="File d'attente"
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${pathname === '/queue' ? 'bg-primary/10 text-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high hover:text-primary'}`}
+          >
+            <MaterialIcon name="queue_music" className="text-lg" />
+          </Link>
+        )}
+        {mounted && currentTrack && !panelOpen && (
           <button
             onClick={togglePanel}
             title="Ouvrir le panneau"

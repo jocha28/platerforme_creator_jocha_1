@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePlayer } from '@/context/PlayerContext'
+import { usePanel } from '@/context/PanelContext'
 import { formatDuration } from '@/lib/utils'
 import MaterialIcon from '@/components/ui/MaterialIcon'
 import { cn } from '@/lib/utils'
@@ -25,6 +26,7 @@ export default function DesktopPlayer() {
     toggleRepeat,
     toggleFavorite,
   } = usePlayer()
+  const { openFullscreen } = usePanel()
 
   if (!currentTrack) return null
 
@@ -133,7 +135,7 @@ export default function DesktopPlayer() {
           <MaterialIcon name="lyrics" />
         </Link>
         <Link
-          href={`/album/${currentTrack.albumId}`}
+          href="/queue"
           className="text-on-surface-variant hover:text-primary transition-colors"
           title="File d'attente"
         >
@@ -155,9 +157,13 @@ export default function DesktopPlayer() {
           </div>
           <MaterialIcon name="volume_up" className="text-on-surface-variant text-sm" />
         </div>
-        <Link href="/now-playing" className="text-on-surface-variant hover:text-primary transition-colors ml-1" title="Plein écran">
+        <button
+          onClick={openFullscreen}
+          className="text-on-surface-variant hover:text-primary transition-colors ml-1"
+          title="Plein écran"
+        >
           <MaterialIcon name="open_in_full" />
-        </Link>
+        </button>
       </div>
     </div>
   )
