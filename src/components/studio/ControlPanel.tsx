@@ -28,6 +28,7 @@ export default function ControlPanel({ state, setState }: Props) {
     { id: 'now-playing', label: 'Now Playing', icon: 'play_circle' },
     { id: 'release', label: 'Nouveauté', icon: 'new_releases' },
     { id: 'stats', label: 'Statistiques', icon: 'monitoring' },
+    { id: 'lyrics', label: 'Paroles', icon: 'format_quote' },
   ]
 
   const updateConfig = (updates: Partial<typeof state.config>) => {
@@ -66,7 +67,7 @@ export default function ControlPanel({ state, setState }: Props) {
       <div className="p-6 flex-1 overflow-y-auto max-h-[600px]">
         {/* TEMPLATE TAB */}
         {activeTab === 'template' && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {templates.map((t) => (
               <button
                 key={t.id}
@@ -126,6 +127,20 @@ export default function ControlPanel({ state, setState }: Props) {
                     className="w-full bg-surface-container rounded-xl px-4 py-3 font-body text-sm text-on-surface border border-outline-variant/10 focus:outline-none focus:border-primary"
                   />
                 </div>
+                
+                {state.templateId === 'lyrics' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant px-1">Paroles (Lyrics)</label>
+                    <textarea 
+                      value={state.config.lyricsText}
+                      onChange={(e) => updateConfig({ lyricsText: e.target.value })}
+                      placeholder="Tapez les paroles ici..."
+                      rows={4}
+                      className="w-full bg-surface-container rounded-xl px-4 py-3 font-body text-sm text-on-surface border border-outline-variant/10 focus:outline-none focus:border-primary resize-none"
+                    />
+                  </div>
+                )}
+
                 {state.templateId === 'stats' && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">

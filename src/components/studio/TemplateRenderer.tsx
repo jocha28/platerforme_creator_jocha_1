@@ -4,6 +4,7 @@ import { StudioState } from '@/types/studio'
 import NowPlayingTemplate from './templates/NowPlayingTemplate'
 import ReleaseTemplate from './templates/ReleaseTemplate'
 import StatsTemplate from './templates/StatsTemplate'
+import LyricsTemplate from './templates/LyricsTemplate'
 
 interface Props {
   state: StudioState
@@ -17,6 +18,8 @@ export default function TemplateRenderer({ state }: Props) {
       return <ReleaseTemplate config={state.config} />
     case 'stats':
       return <StatsTemplate config={state.config} />
+    case 'lyrics':
+      return <LyricsTemplate config={state.config} />
     default:
       return null
   }

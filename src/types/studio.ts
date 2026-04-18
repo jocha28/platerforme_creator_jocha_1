@@ -1,4 +1,4 @@
-export type TemplateId = 'now-playing' | 'release' | 'stats'
+export type TemplateId = 'now-playing' | 'release' | 'stats' | 'lyrics'
 export type StudioMode = 'auto' | 'manual'
 
 export interface StudioConfig {
@@ -9,6 +9,7 @@ export interface StudioConfig {
   secondaryColor: string
   textColor: string
   showWaveform?: boolean
+  lyricsText?: string // Nouveau champ pour les paroles
   stats?: {
     label: string
     value: string
