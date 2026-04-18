@@ -17,7 +17,7 @@ export default function ControlPanel({ state, setState }: Props) {
   const { playlists } = usePlaylist()
   
   // Extraire tous les morceaux uniques de toutes les playlists
-  const allTracks = Array.from(new Map(playlists.flatMap(p => p.trackIds)).values())
+  const allTracks = Array.from(new Set(playlists.flatMap(p => p.trackIds)))
     .map(id => {
       // Pour cet exemple, on simplifie car les objets Track entiers ne sont pas forcément dispos ici
       // Normalement on les récupère via un hook useTracks ou similaire
