@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { StudioConfig } from '@/types/studio'
-import { QuotationMarks } from 'lucide-react'
 
 interface Props {
   config: StudioConfig
