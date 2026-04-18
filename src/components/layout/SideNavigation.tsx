@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { label: 'Search',         icon: 'search',            href: '/search'         },
   { label: 'Library',        icon: 'album',             href: '/library'        },
   { label: 'Certifications', icon: 'workspace_premium', href: '/certifications' },
+  { label: 'Studio',         icon: 'movie_edit',        href: '/studio'         },
   { label: 'Profile',        icon: 'person',            href: '/profile'        },
 ]
 
