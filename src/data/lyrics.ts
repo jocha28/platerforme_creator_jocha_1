@@ -1,6 +1,6 @@
 export interface LyricLine { time: number; text: string }
 
-const JOCHA_LYRICS: Record<string, LyricLine[]> = {
+export const JOCHA_LYRICS: Record<string, LyricLine[]> = {
   'jk-001': [
     { time: 14.4, text: "Hello, new world, j'viens pull un commit dans vos vies," },
     { time: 21.34, text: "Pas d'mask, pas d'filtres, juste du vrai, du gris." },
