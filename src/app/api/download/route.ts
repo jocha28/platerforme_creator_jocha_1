@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import JSZip from 'jszip'
 import { JOCHA_TRACKS } from '@/data/tracks'
-import { JOCHA_LYRICS, LyricLine } from '@/data/lyrics'
+import { JOCHA_LYRICS, LyricLine } from '../../../data/lyrics'
 import { getPlaylists } from '@/app/api/playlists/route'
 
 export const runtime = 'nodejs'
