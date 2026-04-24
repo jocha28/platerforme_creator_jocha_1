@@ -59,6 +59,42 @@ export async function GET(req: NextRequest) {
   const zip = new JSZip()
   const folder = zip.folder(downloadName)
 
+  // ─── Ajout de la Cover ───
+  let coverFilename: string | null = null
+  if (type === 'album') {
+    const album = JOCHA_TRACKS.find(t => t.albumId === id)
+    if (album) coverFilename = album.albumArt.split('/').pop() || null
+  } else if (type === 'track') {
+    const track = JOCHA_TRACKS.find(t => t.id === id)
+    if (track) coverFilename = track.albumArt.split('/').pop() || null
+  } else if (type === 'playlist') {
+    const playlist = getPlaylists().find(p => p.id === id)
+    if (playlist && playlist.cover) {
+      coverFilename = playlist.cover.split('/').pop() || null
+    } else if (tracksToDownload.length > 0) {
+      coverFilename = tracksToDownload[0].albumArt.split('/').pop() || null
+    }
+  }
+
+  if (coverFilename) {
+    const cleanCoverName = decodeURIComponent(coverFilename)
+    // Chercher dans public/covers ou public/profile/images (selon l'URL)
+    const isProfileImg = tracksToDownload[0]?.albumArt.includes('/profile/images/') || 
+                        (type === 'playlist' && getPlaylists().find(p => p.id === id)?.cover?.includes('/profile/images/'))
+    
+    const possiblePaths = [
+      join(process.cwd(), 'public', 'covers', cleanCoverName),
+      join(process.cwd(), 'public', 'profile', 'images', cleanCoverName),
+    ]
+    
+    for (const p of possiblePaths) {
+      if (existsSync(p)) {
+        folder?.file('cover.jpg', readFileSync(p))
+        break
+      }
+    }
+  }
+
   for (const track of tracksToDownload) {
     const filename = decodeURIComponent(track.audioUrl.split('/').pop() || '')
     const audioPath = join(AUDIO_DIR, filename)
