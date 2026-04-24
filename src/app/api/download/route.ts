@@ -98,19 +98,24 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  for (const track of tracksToDownload) {
-    const filename = decodeURIComponent(track.audioUrl.split('/').pop() || '')
-    const audioPath = join(AUDIO_DIR, filename)
+  for (let i = 0; i < tracksToDownload.length; i++) {
+    const track = tracksToDownload[i]
+    const trackIdx = i + 1
+    const prefix = String(trackIdx).padStart(2, '0')
+    
+    const originalFilename = decodeURIComponent(track.audioUrl.split('/').pop() || '')
+    const newFilename = `${prefix} - ${originalFilename}`
+    const audioPath = join(AUDIO_DIR, originalFilename)
 
     if (existsSync(audioPath)) {
       const audioData = readFileSync(audioPath)
-      folder?.file(filename, audioData)
+      folder?.file(newFilename, audioData)
 
-      // Paroles
+      // Paroles (avec le même préfixe pour que le lecteur les associe)
       const lyrics = JOCHA_LYRICS[track.id]
       if (lyrics) {
         const lrcContent = convertToLrc(lyrics)
-        const lrcFilename = filename.replace(/\.(mp3|wav|m4a)$/i, '.lrc')
+        const lrcFilename = newFilename.replace(/\.(mp3|wav|m4a)$/i, '.lrc')
         folder?.file(lrcFilename, lrcContent)
       }
     }
