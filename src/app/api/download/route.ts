@@ -33,7 +33,9 @@ export async function GET(req: NextRequest) {
   let downloadName = 'Download'
 
   if (type === 'album') {
-    tracksToDownload = JOCHA_TRACKS.filter(t => t.albumId === id)
+    tracksToDownload = JOCHA_TRACKS
+      .filter(t => t.albumId === id)
+      .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
     downloadName = tracksToDownload[0]?.albumTitle || 'Album'
   } else if (type === 'track') {
     tracksToDownload = JOCHA_TRACKS.filter(t => t.id === id)
@@ -43,6 +45,7 @@ export async function GET(req: NextRequest) {
     const playlist = playlists.find(p => p.id === id)
     if (!playlist) return new NextResponse('Playlist not found', { status: 404 })
     
+    // Pour les playlists, l'ordre est déjà celui de trackIds car on map dessus
     tracksToDownload = playlist.trackIds
       .map(tid => JOCHA_TRACKS.find(t => t.id === tid))
       .filter((t): t is NonNullable<typeof t> => t !== undefined)
