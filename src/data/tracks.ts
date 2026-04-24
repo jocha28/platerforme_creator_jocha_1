@@ -2479,5 +2479,5 @@ export const JOCHA_TRACKS: Track[] = [
     plays: 0,
     isFavorite: false,
     genres: ['rap dev'],
-  },,
+  },
 ]
