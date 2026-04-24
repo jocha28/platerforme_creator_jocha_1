@@ -15,14 +15,13 @@ export default function AlbumPageClient({ album }: { album: Album }) {
   const { play, currentTrack, isPlaying, toggleFavorite, playCounts } = usePlayer()
 
   // album.tracks est toujours vide (données statiques) — on charge depuis JOCHA_TRACKS
-  const tracks =
+  const tracks = (
     album.tracks.length > 0
       ? album.tracks
       : album.type === 'single'
         ? JOCHA_TRACKS.filter((t) => t.id === album.id)
-        : JOCHA_TRACKS
-            .filter((t) => t.albumId === album.id)
-            .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
+        : JOCHA_TRACKS.filter((t) => t.albumId === album.id)
+  ).sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
 
   const [favorites, setFavorites] = useState<Set<string>>(
     new Set(tracks.filter((t) => t.isFavorite).map((t) => t.id))
@@ -142,6 +141,13 @@ export default function AlbumPageClient({ album }: { album: Album }) {
                 <MaterialIcon name="shuffle" />
                 SHUFFLE
               </button>
+              <a
+                href={`/api/download?type=album&id=${album.id}`}
+                className="px-8 md:px-10 py-3 md:py-4 border border-primary/20 text-primary font-headline font-bold uppercase tracking-widest text-sm rounded-full flex items-center gap-2 hover:bg-primary/5 transition-all active:scale-95"
+              >
+                <MaterialIcon name="download" />
+                DOWNLOAD
+              </a>
             </div>
           </div>
         </div>

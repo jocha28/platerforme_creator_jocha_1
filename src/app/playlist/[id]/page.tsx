@@ -204,6 +204,13 @@ export default function PlaylistDetailPage({ params }: PageProps) {
                 <MaterialIcon name="edit" />
                 ÉDITER
               </button>
+              <a
+                href={`/api/download?type=playlist&id=${playlist.id}`}
+                className="px-8 md:px-10 py-3 md:py-4 border border-primary/20 text-primary font-headline font-bold uppercase tracking-widest text-sm rounded-full flex items-center gap-2 hover:bg-primary/5 transition-all active:scale-95"
+              >
+                <MaterialIcon name="download" />
+                DOWNLOAD
+              </a>
             </div>
           </div>
         </div>

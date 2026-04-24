@@ -153,6 +153,14 @@ export default function TrackRow({
         >
           <MaterialIcon name="lyrics" className="text-lg" />
         </Link>
+        <a
+          href={`/api/download?type=track&id=${track.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="hidden md:block text-on-surface-variant/40 hover:text-primary transition-colors"
+          title="Télécharger (Audio + Paroles sync)"
+        >
+          <MaterialIcon name="download" className="text-lg" />
+        </a>
         <span className="font-label text-sm text-on-surface-variant hidden md:block">
           {formatDuration(track.duration)}
         </span>
