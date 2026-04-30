@@ -30,7 +30,7 @@ export default function DesktopTopBar() {
   return (
     <header 
       className="hidden lg:flex fixed top-0 right-0 h-16 z-40 bg-background/80 backdrop-blur-xl border-b border-outline-variant/10 items-center justify-between px-8 transition-[left] duration-300"
-      style={{ left: sidebarCollapsed ? '64px' : `${sidebarWidth}px` }}
+      style={mounted ? { left: sidebarCollapsed ? '64px' : `${sidebarWidth}px` } : {}}
     >
       {/* Boutons navigation historique */}
       <div className="flex items-center gap-1 mr-4 shrink-0">

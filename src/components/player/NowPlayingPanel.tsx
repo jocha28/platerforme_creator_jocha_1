@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePlayer } from '@/context/PlayerContext'
@@ -15,6 +15,8 @@ export default function NowPlayingPanel() {
   const { profile } = useArtist()
   const { togglePanel, panelWidth } = usePanel()
   const [showArtist, setShowArtist] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   if (!currentTrack) return null
 
@@ -27,7 +29,7 @@ export default function NowPlayingPanel() {
     <>
       <aside 
         className="hidden lg:flex fixed right-0 top-0 bottom-24 flex-col bg-surface-container border-l border-outline-variant/10 z-40 overflow-hidden transition-[width] duration-300"
-        style={{ width: `${panelWidth}px` }}
+        style={mounted ? { width: `${panelWidth}px` } : {}}
       >
 
         {/* Header */}

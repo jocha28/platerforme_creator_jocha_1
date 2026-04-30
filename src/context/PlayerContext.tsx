@@ -64,17 +64,15 @@ interface PlayerActions {
 const PlayerContext = createContext<(PlayerState & PlayerActions) | null>(null)
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
-  // 1. Initial State
-  const savedSession = typeof window !== 'undefined' ? loadSession() : null
-  const savedTrack = savedSession ? JOCHA_TRACKS.find(t => t.id === savedSession.trackId) ?? null : null
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(savedTrack)
+  // 1. Initial State - Must match server exactly
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(savedSession?.currentTime ?? 0)
+  const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [volume, setVolumeState] = useState(savedSession?.volume ?? 0.7)
+  const [volume, setVolumeState] = useState(0.7)
   const [queue, setQueue] = useState<Track[]>([])
-  const [isShuffle, setIsShuffle] = useState(savedSession?.isShuffle ?? false)
-  const [repeatMode, setRepeatMode] = useState<RepeatMode>(savedSession?.repeatMode ?? 'off')
+  const [isShuffle, setIsShuffle] = useState(false)
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>('off')
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({})
   const [recentTrackIds, setRecentTrackIds] = useState<string[]>([])
@@ -88,7 +86,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const secondaryAudioRef = useRef<HTMLAudioElement | null>(null)
   const activeAudioKey = useRef<'primary' | 'secondary'>('primary')
   const isTransitioningRef = useRef(false)
-  const volumeRef = useRef(savedSession?.volume ?? 0.7)
+  const volumeRef = useRef(0.7)
   const queueRef = useRef<Track[]>([])
   const currentTrackRef = useRef<Track | null>(null)
   const isShuffleRef = useRef(false)
@@ -108,6 +106,28 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => { crossfadeDurRef.current = crossfadeDuration }, [crossfadeDuration])
   useEffect(() => { volumeRef.current = volume }, [volume])
   useEffect(() => { isPlaylistSourceRef.current = isPlaylistSource }, [isPlaylistSource])
+
+  // Load Session on Mount
+  useEffect(() => {
+    const saved = loadSession()
+    if (saved) {
+      const track = JOCHA_TRACKS.find(t => t.id === saved.trackId)
+      if (track) setCurrentTrack(track)
+      const q = saved.queueIds.map(id => JOCHA_TRACKS.find(t => t.id === id)).filter(Boolean) as Track[]
+      setQueue(q)
+      setCurrentTime(saved.currentTime)
+      setVolumeState(saved.volume)
+      setIsShuffle(saved.isShuffle)
+      setRepeatMode(saved.repeatMode)
+      
+      // Sync audio with saved track if it exists
+      if (track?.audioUrl && audioRef.current) {
+        audioRef.current.src = track.audioUrl
+        audioRef.current.load()
+        audioRef.current.currentTime = saved.currentTime
+      }
+    }
+  }, [])
 
   // 3. Audio Initialization (Run ONCE)
   useEffect(() => {
@@ -134,12 +154,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       })
     }
     setup(a1, 'primary'); setup(a2, 'secondary')
-    
-    // Recovery from saved session
-    if (savedTrack?.audioUrl) {
-      a1.src = savedTrack.audioUrl; a1.load()
-      if (savedSession?.currentTime) a1.currentTime = savedSession.currentTime
-    }
 
     return () => { a1.pause(); a2.pause(); a1.src = ''; a2.src = '' }
   }, [])

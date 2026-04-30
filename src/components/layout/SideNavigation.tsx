@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -25,16 +26,18 @@ export default function SideNavigation() {
   const { profile } = useArtist()
   const { sidebarCollapsed, toggleSidebar, sidebarWidth } = usePanel()
   const { currentTrack } = usePlayer()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   return (
     <aside
       className={cn(
         'hidden lg:flex flex-col fixed left-0 top-0 z-50 bg-surface-container-low border-r border-outline-variant/10 transition-[width] duration-300'
       )}
-      style={{ 
+      style={mounted ? { 
         width: sidebarCollapsed ? '64px' : `${sidebarWidth}px`,
         bottom: currentTrack ? '96px' : '0px' 
-      }}
+      } : {}}
       suppressHydrationWarning
     >
       {/* Logo / toggle */}
