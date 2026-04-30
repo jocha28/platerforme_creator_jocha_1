@@ -13,7 +13,7 @@ import { JOCHA_TRACKS } from '@/data/tracks'
 export default function NowPlayingPanel() {
   const { currentTrack, queue, play, playCounts } = usePlayer()
   const { profile } = useArtist()
-  const { togglePanel } = usePanel()
+  const { togglePanel, panelWidth } = usePanel()
   const [showArtist, setShowArtist] = useState(false)
 
   if (!currentTrack) return null
@@ -25,7 +25,10 @@ export default function NowPlayingPanel() {
 
   return (
     <>
-      <aside className="hidden lg:flex fixed right-0 top-0 bottom-24 w-72 flex-col bg-surface-container border-l border-outline-variant/10 z-40 overflow-hidden">
+      <aside 
+        className="hidden lg:flex fixed right-0 top-0 bottom-24 flex-col bg-surface-container border-l border-outline-variant/10 z-40 overflow-hidden transition-[width] duration-300"
+        style={{ width: `${panelWidth}px` }}
+      >
 
         {/* Header */}
         <div className="px-5 py-4 border-b border-outline-variant/10 shrink-0 flex items-center justify-between">

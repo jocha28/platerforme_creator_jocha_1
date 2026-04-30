@@ -17,11 +17,23 @@ import { usePanel } from '@/context/PanelContext'
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { currentTrack } = usePlayer()
-  const { panelOpen, sidebarCollapsed, fullscreenOpen } = usePanel()
+  const { 
+    panelOpen, 
+    sidebarCollapsed, 
+    fullscreenOpen, 
+    sidebarWidth, 
+    setSidebarWidth,
+    panelWidth,
+    setPanelWidth 
+  } = usePanel()
   const pathname = usePathname()
   const isNowPlaying = pathname === '/now-playing'
   const [mounted, setMounted] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
+
+  // Drag states
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false)
+  const [isResizingPanel, setIsResizingPanel] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -31,35 +43,43 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // Padding bas adapté : mobile (nav 80 + mini-player ~88) / desktop (player 96)
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingSidebar) {
+        setSidebarWidth(e.clientX)
+      }
+      if (isResizingPanel) {
+        setPanelWidth(window.innerWidth - e.clientX)
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsResizingSidebar(false)
+      setIsResizingPanel(false)
+      document.body.style.cursor = 'default'
+    }
+
+    if (isResizingSidebar || isResizingPanel) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizingSidebar, isResizingPanel, setSidebarWidth, setPanelWidth])
+
   const pbStyle = mounted
     ? { paddingBottom: isDesktop ? (currentTrack ? 104 : 24) : (currentTrack ? 176 : 88) }
-    : { paddingBottom: 176 } // valeur sûre SSR
+    : { paddingBottom: 176 }
 
-  // Classes Tailwind pour les marges — appliquées immédiatement via CSS
-  // sans attendre le JS, évite le chevauchement avec la sidebar
-  const mainClass = cn(
-    'transition-[margin] duration-300',
-    sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64',
-    currentTrack && panelOpen ? 'lg:mr-72' : 'lg:mr-0',
-  )
-
-  if (isNowPlaying) {
-    return (
-      <>
-        <SideNavigation />
-        {mounted && currentTrack && <DesktopPlayer />}
-        {mounted && currentTrack && fullscreenOpen && <FullscreenPlayer />}
-        <main
-          suppressHydrationWarning
-          className={cn(sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64', 'transition-[margin] duration-300')}
-          style={pbStyle}
-        >
-          {children}
-        </main>
-      </>
-    )
-  }
+  // Calcul des styles de marges dynamiques
+  const mainStyle = mounted && isDesktop ? {
+    marginLeft: sidebarCollapsed ? '64px' : `${sidebarWidth}px`,
+    marginRight: (currentTrack && panelOpen) ? `${panelWidth}px` : '0px',
+  } : {}
 
   return (
     <>
@@ -72,16 +92,35 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop */}
       <SideNavigation />
+      
+      {/* Sidebar Resize Handle */}
+      {mounted && isDesktop && !sidebarCollapsed && (
+        <div 
+          className="fixed top-0 bottom-24 w-1 hover:bg-primary/40 cursor-col-resize z-[60] transition-colors"
+          style={{ left: `${sidebarWidth}px` }}
+          onMouseDown={() => setIsResizingSidebar(true)}
+        />
+      )}
+
       <DesktopTopBar />
       {mounted && currentTrack && <DesktopPlayer />}
       {mounted && currentTrack && panelOpen && <NowPlayingPanel />}
+      
+      {/* Panel Resize Handle */}
+      {mounted && isDesktop && panelOpen && currentTrack && (
+        <div 
+          className="fixed top-0 bottom-24 w-1 hover:bg-primary/40 cursor-col-resize z-[60] transition-colors"
+          style={{ right: `${panelWidth}px` }}
+          onMouseDown={() => setIsResizingPanel(true)}
+        />
+      )}
+
       {mounted && currentTrack && fullscreenOpen && <FullscreenPlayer />}
 
-      {/* Contenu principal — marges via classes CSS, pas de délai JS */}
       <main
         suppressHydrationWarning
-        className={mainClass}
-        style={pbStyle}
+        className="transition-[padding] duration-300 min-h-screen"
+        style={{ ...pbStyle, ...mainStyle }}
       >
         {children}
       </main>

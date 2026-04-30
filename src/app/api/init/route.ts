@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { readStore } from '@/lib/server-store'
 import { ArtistProfile } from '@/types'
 import { getPlaylists } from '@/app/api/playlists/route'
+import { JOCHA_TRACKS } from '@/data/tracks'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -36,6 +37,20 @@ export function GET() {
     .slice(0, 10)
     .map(([tid]) => tid)
 
+  // Top Projets de la semaine (Albums, EPs, Singles)
+  const weeklyReleaseCounts: Record<string, number> = {}
+  weeklyPlays.forEach(h => {
+    const track = JOCHA_TRACKS.find(t => t.id === h.trackId)
+    if (track) {
+      const rid = track.albumId === 'singles' ? track.id : track.albumId
+      weeklyReleaseCounts[rid] = (weeklyReleaseCounts[rid] ?? 0) + 1
+    }
+  })
+  const weeklyTopReleaseIds = Object.entries(weeklyReleaseCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([rid]) => rid)
+
   const profile    = readStore<ArtistProfile>('profile.json', DEFAULT_PROFILE)
   const playlists  = getPlaylists()
 
@@ -45,7 +60,8 @@ export function GET() {
       profile, 
       playlists,
       recentTrackIds,
-      weeklyTopTrackIds
+      weeklyTopTrackIds,
+      weeklyTopReleaseIds
     },
     { headers: { 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30' } }
   )

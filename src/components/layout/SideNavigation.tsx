@@ -23,18 +23,18 @@ const NAV_ITEMS = [
 export default function SideNavigation() {
   const pathname = usePathname()
   const { profile } = useArtist()
-  const { sidebarCollapsed, toggleSidebar } = usePanel()
+  const { sidebarCollapsed, toggleSidebar, sidebarWidth } = usePanel()
   const { currentTrack } = usePlayer()
-
-  const w = sidebarCollapsed ? 'w-16' : 'w-64'
 
   return (
     <aside
       className={cn(
-        'hidden lg:flex flex-col fixed left-0 top-0 z-50 bg-surface-container-low border-r border-outline-variant/10 transition-all duration-300',
-        w
+        'hidden lg:flex flex-col fixed left-0 top-0 z-50 bg-surface-container-low border-r border-outline-variant/10 transition-[width] duration-300'
       )}
-      style={{ bottom: currentTrack ? 96 : 0 }}
+      style={{ 
+        width: sidebarCollapsed ? '64px' : `${sidebarWidth}px`,
+        bottom: currentTrack ? '96px' : '0px' 
+      }}
       suppressHydrationWarning
     >
       {/* Logo / toggle */}

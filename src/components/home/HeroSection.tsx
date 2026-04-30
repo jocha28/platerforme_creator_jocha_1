@@ -21,160 +21,176 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="overflow-hidden">
+    <section className="relative overflow-hidden bg-[#0F0D0A]">
+      {/* Cinematic Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/5 blur-[120px] rounded-full" />
+      </div>
 
       {/* ════════════════════════════════
-          MOBILE  (< lg)
+          MOBILE (< lg)
       ════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col">
-
-        {/* Cover grande — haut */}
-        <div className="relative w-full aspect-square">
+      <div className="lg:hidden flex flex-col relative z-10">
+        <div className="relative w-full aspect-[4/5] overflow-hidden">
           <Image
             src={featured.coverArt}
             alt={featured.title}
             fill
-            className="object-cover"
+            className="object-cover scale-105"
             unoptimized
             priority
           />
-          {/* Dégradé bas pour fondre avec le contenu */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-
-          {/* Badge flottant en haut à gauche */}
-          <div className="absolute top-4 left-4">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/50 backdrop-blur-md border border-primary/40 rounded-full font-label text-[10px] uppercase tracking-[0.25em] text-primary font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Nouvelle Sortie
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-[#0F0D0A]" />
+          
+          <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-primary text-on-primary rounded-full font-label text-[9px] uppercase tracking-[0.2em] font-black shadow-lg">
+              Featured
             </span>
-          </div>
-
-          {/* Type + année flottant en haut à droite */}
-          <div className="absolute top-4 right-4">
-            <span className="font-label text-[10px] text-white/60 uppercase tracking-widest bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-full">
-              {featured.type.toUpperCase()} · {featured.year}
-            </span>
+            <div className="flex flex-col items-end gap-1">
+              <span className="font-label text-[10px] text-white/80 uppercase tracking-widest font-bold drop-shadow-md">
+                {featured.year}
+              </span>
+              <span className="w-8 h-0.5 bg-primary rounded-full" />
+            </div>
           </div>
         </div>
 
-        {/* Contenu texte */}
-        <div className="px-6 pt-4 pb-8 -mt-8 relative z-10">
-          <h1 className="font-headline font-black uppercase tracking-tighter text-on-background leading-[0.85] mb-3"
-            style={{ fontSize: 'clamp(2.8rem, 14vw, 4rem)' }}>
+        <div className="px-8 -mt-24 pb-12 relative z-20">
+          <p className="font-label text-[10px] text-primary uppercase tracking-[0.4em] font-black mb-2 drop-shadow-lg">
+            {featured.genre}
+          </p>
+          <h1 className="font-headline font-black uppercase tracking-tighter text-white leading-[0.8] mb-6 drop-shadow-2xl"
+            style={{ fontSize: 'clamp(3.5rem, 15vw, 5rem)' }}>
             {featured.title}
           </h1>
-
-          <div className="flex flex-wrap items-center gap-2 mb-6 text-on-surface-variant/60">
-            <span className="font-label text-xs uppercase tracking-widest">{tracks.length} titres</span>
-            <span className="text-outline-variant">·</span>
-            <span className="font-label text-xs uppercase tracking-widest">{featured.genre}</span>
-            <span className="text-outline-variant">·</span>
-            <span className="font-label text-xs text-primary uppercase tracking-widest font-bold">Jocha</span>
-          </div>
 
           <div className="flex gap-3">
             <button
               onClick={handlePlay}
-              className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary text-on-primary rounded-2xl font-headline font-bold uppercase tracking-widest text-sm active:scale-95 transition-all shadow-lg shadow-primary/30"
+              className="flex-1 flex items-center justify-center gap-3 py-5 bg-white text-black rounded-2xl font-headline font-black uppercase tracking-widest text-xs active:scale-95 transition-all shadow-2xl"
             >
-              <MaterialIcon name="play_arrow" filled size="lg" />
-              Écouter
+              <MaterialIcon name="play_arrow" filled className="text-xl" />
+              Play Now
             </button>
             <Link
               href={`/album/${featured.slug}`}
-              className="flex items-center justify-center gap-2 px-5 py-4 border border-outline-variant/30 text-on-surface rounded-2xl font-headline font-bold uppercase tracking-widest text-sm hover:bg-surface-container transition-all"
+              className="w-16 flex items-center justify-center bg-white/10 backdrop-blur-xl border border-white/10 text-white rounded-2xl hover:bg-white/20 transition-all"
             >
-              <MaterialIcon name="arrow_forward" className="text-base" />
+              <MaterialIcon name="arrow_outward" />
             </Link>
           </div>
         </div>
       </div>
 
       {/* ════════════════════════════════
-          DESKTOP  (≥ lg)
+          DESKTOP (≥ lg)
       ════════════════════════════════ */}
-      <div className="hidden lg:flex flex-row min-h-[calc(100vh-4rem)]">
+      <div className="hidden lg:flex flex-row min-h-[85vh] relative z-10">
+        <div className="relative flex-1 flex flex-col justify-center px-16 xl:px-24 py-20">
+          <div className="space-y-6 max-w-2xl">
+            <div className="flex items-center gap-4">
+              <span className="h-[1px] w-12 bg-primary/40" />
+              <span className="font-label text-[11px] text-primary uppercase tracking-[0.5em] font-black">
+                Artist Spotlight
+              </span>
+            </div>
 
-        {/* Panneau gauche : texte */}
-        <div className="relative z-10 flex-1 flex flex-col justify-center px-14 xl:px-20">
+            <div className="relative">
+              <h1
+                className="font-headline font-black uppercase tracking-tighter text-white leading-[0.8] mb-2"
+                style={{ fontSize: 'clamp(5rem, 10vw, 9rem)' }}
+              >
+                {featured.title}
+              </h1>
+              <div className="flex items-center gap-4 mt-4">
+                <span className="font-label text-xs text-white/40 uppercase tracking-[0.3em] font-bold">
+                  {featured.type}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="font-label text-xs text-white/40 uppercase tracking-[0.3em] font-bold">
+                  {featured.year}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-white/20" />
+                <span className="font-label text-xs text-primary uppercase tracking-[0.3em] font-bold">
+                  Jocha
+                </span>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/25 rounded-full font-label text-[10px] uppercase tracking-[0.3em] text-primary font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Nouvelle Sortie
-            </span>
-            <span className="font-label text-[10px] text-on-surface-variant/60 uppercase tracking-widest">
-              {featured.type.toUpperCase()} · {featured.year}
-            </span>
+            <p className="font-body text-white/50 text-lg leading-relaxed max-w-lg mb-8">
+              Découvrez l'univers brut de {featured.title}, une fusion entre codes binaires et flows tranchants.
+            </p>
+
+            <div className="flex flex-wrap gap-4 pt-4">
+              <button
+                onClick={handlePlay}
+                className="group relative flex items-center gap-4 px-10 py-5 bg-primary text-on-primary rounded-full font-headline font-black uppercase tracking-widest text-xs hover:pr-12 transition-all shadow-2xl shadow-primary/20 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
+                <MaterialIcon name="play_arrow" filled className="text-xl relative z-10" />
+                <span className="relative z-10">Écouter le projet</span>
+              </button>
+              
+              <Link
+                href={`/album/${featured.slug}`}
+                className="flex items-center gap-4 px-10 py-5 bg-white/5 backdrop-blur-md border border-white/10 text-white rounded-full font-headline font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all"
+              >
+                Explorer
+                <MaterialIcon name="arrow_forward" className="text-sm" />
+              </Link>
+            </div>
           </div>
 
-          <h1
-            className="font-headline font-black uppercase tracking-tighter text-on-background leading-[0.85] mb-6"
-            style={{ fontSize: 'clamp(3.5rem, 9vw, 7rem)' }}
-          >
-            {featured.title}
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-2 mb-8 text-on-surface-variant/70">
-            <span className="font-label text-xs uppercase tracking-widest">{tracks.length} titres</span>
-            <span className="text-outline-variant">·</span>
-            <span className="font-label text-xs uppercase tracking-widest">{featured.genre}</span>
-            <span className="text-outline-variant">·</span>
-            <span className="font-label text-xs text-primary uppercase tracking-widest font-bold">Jocha</span>
-          </div>
-
-          <div className="flex flex-wrap gap-3 mb-10">
-            <button
-              onClick={handlePlay}
-              className="flex items-center gap-2 px-8 py-4 bg-primary text-on-primary rounded-full font-headline font-bold uppercase tracking-widest text-sm hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-primary/25"
-            >
-              <MaterialIcon name="play_arrow" filled size="lg" />
-              Écouter
-            </button>
-            <Link
-              href={`/album/${featured.slug}`}
-              className="flex items-center gap-2 px-8 py-4 border border-outline-variant/25 text-on-surface rounded-full font-headline font-bold uppercase tracking-widest text-sm hover:bg-surface-container transition-all"
-            >
-              Explorer
-              <MaterialIcon name="arrow_forward" className="text-sm" />
-            </Link>
-          </div>
-
+          {/* Quick Tracklist */}
           {tracks.length > 0 && (
-            <div className="border-t border-outline-variant/10 pt-6 space-y-1 max-w-sm">
-              <p className="font-label text-[9px] uppercase tracking-[0.3em] text-on-surface-variant/40 mb-3 px-3">
-                Sur cet {featured.type === 'album' ? 'Album' : 'EP'}
-              </p>
-              {tracks.slice(0, 3).map((t, i) => (
+            <div className="mt-16 grid grid-cols-2 gap-x-8 gap-y-1 max-w-xl">
+              {tracks.slice(0, 4).map((t, i) => (
                 <button
                   key={t.id}
                   onClick={() => play(t, tracks)}
-                  className="w-full flex items-center gap-4 px-3 py-2.5 rounded-xl hover:bg-surface-container-high transition-colors group text-left"
+                  className="flex items-center gap-4 p-2 rounded-xl hover:bg-white/5 transition-all group text-left border border-transparent hover:border-white/5"
                 >
-                  <span className="font-label text-[10px] text-on-surface-variant/30 w-4 shrink-0 text-right">{i + 1}</span>
-                  <span className="font-headline font-bold text-xs text-on-surface group-hover:text-primary transition-colors flex-1 truncate">
+                  <span className="font-label text-[10px] text-white/20 w-4 font-black">0{i + 1}</span>
+                  <span className="font-headline font-bold text-xs text-white group-hover:text-primary transition-colors flex-1 truncate">
                     {t.title}
                   </span>
-                  <MaterialIcon name="play_arrow" className="text-on-surface-variant text-sm opacity-0 group-hover:opacity-60 transition-opacity shrink-0" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Panneau droit : cover */}
-        <div className="w-[42%] xl:w-[45%] shrink-0 relative">
-          <div className="absolute inset-y-0 left-0 w-40 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
-          <Image
-            src={featured.coverArt}
-            alt={featured.title}
-            fill
-            className="object-cover object-center"
-            unoptimized
-            priority
-          />
+        <div className="w-[45%] xl:w-[50%] relative">
+          {/* Cover with Deep Effects */}
+          <div className="absolute inset-0 z-10 shadow-[inset_100px_0_150px_-50px_#0F0D0A]" />
+          <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-[#0F0D0A] to-transparent z-20" />
+          
+          <div className="relative w-full h-full overflow-hidden">
+            <Image
+              src={featured.coverArt}
+              alt={featured.title}
+              fill
+              className="object-cover object-center scale-105 hover:scale-100 transition-transform duration-[3s] ease-out"
+              unoptimized
+              priority
+            />
+          </div>
+
+          {/* Floating Element over cover */}
+          <div className="absolute bottom-20 left-0 z-30 -translate-x-1/2 hidden xl:block">
+            <div className="bg-white/10 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl shadow-2xl">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary animate-bounce">
+                  <MaterialIcon name="star" filled />
+                </div>
+                <div>
+                  <p className="font-label text-[10px] text-white/40 uppercase tracking-widest font-black">Top Release</p>
+                  <p className="font-headline text-white font-bold">{featured.genre}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

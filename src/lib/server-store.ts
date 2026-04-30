@@ -7,7 +7,10 @@ const DATA_DIR = process.env.DATA_DIR ?? join(process.cwd(), '.data')
 const memCache = new Map<string, unknown>()
 
 export function readStore<T>(filename: string, fallback: T): T {
-  if (memCache.has(filename)) return memCache.get(filename) as T
+  // Toujours lire sur le disque pour l'historique et les compteurs pour éviter les désynchronisations
+  const isCritical = filename === 'play-history.json' || filename === 'play-counts.json'
+  
+  if (!isCritical && memCache.has(filename)) return memCache.get(filename) as T
   const path = join(DATA_DIR, filename)
   if (!existsSync(path)) return fallback
   try {

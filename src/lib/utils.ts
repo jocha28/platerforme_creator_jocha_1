@@ -12,10 +12,9 @@ export function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export function formatPlays(plays: number): string {
-  if (plays >= 1_000_000) return `${(plays / 1_000_000).toFixed(1)}M`
-  if (plays >= 1_000) return `${(plays / 1_000).toFixed(1)}k`
-  return plays.toString()
+export function formatPlays(plays: number | undefined | null): string {
+  if (!plays) return '0'
+  return new Intl.NumberFormat('fr-FR').format(plays).replace(/\u00a0/g, ' ')
 }
 
 export interface Certification {

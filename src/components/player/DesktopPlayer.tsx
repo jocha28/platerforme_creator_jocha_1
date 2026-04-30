@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePlayer } from '@/context/PlayerContext'
@@ -28,15 +29,78 @@ export default function DesktopPlayer() {
   } = usePlayer()
   const { openFullscreen } = usePanel()
 
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragProgress, setDragProgress] = useState(0)
+  const [isDraggingVolume, setIsDraggingVolume] = useState(false)
+
   if (!currentTrack) return null
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
+  const displayProgress = isDragging ? dragProgress : progress
 
-  function handleProgressClick(e: React.MouseEvent<HTMLDivElement>) {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const ratio = (e.clientX - rect.left) / rect.width
-    seek(Math.floor(ratio * duration))
-  }
+  // Seek Drag Logic
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const bar = document.getElementById('seek-bar-container')
+        if (bar) {
+          const rect = bar.getBoundingClientRect()
+          const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+          setDragProgress(ratio * 100)
+        }
+      }
+    }
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (isDragging) {
+        const bar = document.getElementById('seek-bar-container')
+        if (bar) {
+          const rect = bar.getBoundingClientRect()
+          const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+          seek(Math.floor(ratio * duration))
+        }
+        setIsDragging(false)
+      }
+    }
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, duration, seek])
+
+  // Volume Drag Logic
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingVolume) {
+        const bar = document.getElementById('volume-bar-container')
+        if (bar) {
+          const rect = bar.getBoundingClientRect()
+          const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+          setVolume(ratio)
+        }
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsDraggingVolume(false)
+    }
+
+    if (isDraggingVolume) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDraggingVolume, setVolume])
 
   return (
     <div className="hidden lg:flex fixed bottom-0 left-0 right-0 h-24 z-50 bg-surface-container/95 backdrop-blur-2xl border-t border-outline-variant/10 items-center px-6 gap-4">
@@ -109,12 +173,18 @@ export default function DesktopPlayer() {
             {formatDuration(currentTime)}
           </span>
           <div
+            id="seek-bar-container"
             className="flex-1 h-1 bg-surface-variant rounded-full cursor-pointer group/bar relative"
-            onClick={handleProgressClick}
+            onMouseDown={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect()
+              const ratio = (e.clientX - rect.left) / rect.width
+              setDragProgress(ratio * 100)
+              setIsDragging(true)
+            }}
           >
             <div
               className="h-full bg-primary rounded-full relative transition-all"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${displayProgress}%` }}
             >
               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-lg opacity-0 group-hover/bar:opacity-100 transition-opacity" />
             </div>
@@ -141,22 +211,29 @@ export default function DesktopPlayer() {
         >
           <MaterialIcon name="queue_music" />
         </Link>
+        
         <div className="flex items-center gap-2 ml-2">
           <MaterialIcon name="volume_down" className="text-on-surface-variant text-sm" />
           <div
-            className="w-20 h-1 bg-surface-variant rounded-full cursor-pointer"
-            onClick={(e) => {
+            id="volume-bar-container"
+            className="w-20 h-1 bg-surface-variant rounded-full cursor-pointer relative group/vol"
+            onMouseDown={(e) => {
               const rect = e.currentTarget.getBoundingClientRect()
-              setVolume((e.clientX - rect.left) / rect.width)
+              const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+              setVolume(ratio)
+              setIsDraggingVolume(true)
             }}
           >
             <div
-              className="h-full bg-on-surface-variant rounded-full"
+              className="h-full bg-on-surface-variant rounded-full relative"
               style={{ width: `${volume * 100}%` }}
-            />
+            >
+               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-on-surface-variant shadow-lg opacity-0 group-hover/vol:opacity-100 transition-opacity" />
+            </div>
           </div>
           <MaterialIcon name="volume_up" className="text-on-surface-variant text-sm" />
         </div>
+
         <button
           onClick={openFullscreen}
           className="text-on-surface-variant hover:text-primary transition-colors ml-1"

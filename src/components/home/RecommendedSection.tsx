@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { usePlayer } from '@/context/PlayerContext'
 import { JOCHA_TRACKS } from '@/data/tracks'
 import MaterialIcon from '@/components/ui/MaterialIcon'
@@ -9,19 +9,24 @@ import { formatPlays } from '@/lib/utils'
 
 export default function RecommendedSection() {
   const { playCounts, play } = usePlayer()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const { recommended, hasAnyPlay } = useMemo(() => {
-    const entries = Object.entries(playCounts)
+    if (!mounted) return { recommended: [], hasAnyPlay: false }
+
+    const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24))
+    const counts = playCounts || {}
+    const entries = Object.entries(counts)
     const anyPlay = entries.some(([, count]) => count > 0)
 
-    if (!anyPlay) {
-      return { recommended: [], hasAnyPlay: false }
-    }
-
-    // 1. Calculer les scores de genre pondérés par playCount
+    // 1. Genre Affinity Scoring
     const genreScores: Record<string, number> = {}
     for (const track of JOCHA_TRACKS) {
-      const count = playCounts[track.id] ?? 0
+      const count = counts[track.id] ?? 0
       if (count > 0 && track.genres) {
         for (const genre of track.genres) {
           genreScores[genre] = (genreScores[genre] ?? 0) + count
@@ -29,92 +34,132 @@ export default function RecommendedSection() {
       }
     }
 
-    // 2. Calculer un score pour chaque piste
+    // 2. Advanced Scoring & Selection
     const scored = JOCHA_TRACKS.map(track => {
       const commonGenres = (track.genres ?? []).filter(g => genreScores[g] > 0)
-      const genreMatch = commonGenres.reduce((sum, g) => sum + genreScores[g], 0)
-      const score = genreMatch / (1 + (playCounts[track.id] ?? 0))
-      return { track, score }
+      const genreMatch = commonGenres.reduce((sum, g) => sum + (genreScores[g] || 0), 0)
+      const playCount = counts[track.id] ?? 0
+      
+      const trackSeed = track.id.split('').reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0)
+      const dailyRandom = ((trackSeed * (daySeed + 123)) % 1000) / 1000
+
+      // Score Affinity (Genre match)
+      const affinityScore = Math.log1p(genreMatch) * (0.8 + dailyRandom * 0.4)
+      
+      // Score Discovery (Random + Not played much)
+      const discoveryScore = (1 / (1 + playCount)) * (0.5 + dailyRandom * 2.0)
+      
+      return { track, affinityScore, discoveryScore }
     })
 
-    // 3. Top 8 avec score > 0, sinon 8 premières non jouées
-    const withScore = scored
-      .filter(s => s.score > 0)
-      .sort((a, b) => b.score - a.score)
+    // Pick 4 from high affinity and 4 from high discovery
+    const favorites = [...scored]
+      .sort((a, b) => b.affinityScore - a.affinityScore)
+      .slice(0, 15) // Top 15 favoris
+    
+    const discoveries = [...scored]
+      .sort((a, b) => b.discoveryScore - a.discoveryScore)
+      .slice(0, 15) // Top 15 découvertes
+
+    // Mélanger et prendre 8 au total de façon aléatoire basée sur le jour
+    const combined = [...favorites, ...discoveries]
+    const unique = Array.from(new Set(combined.map(s => s.track.id)))
+      .map(id => combined.find(s => s.track.id === id)!)
+      .sort((a, b) => {
+        const seedA = a.track.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+        const seedB = b.track.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+        return ((seedA * daySeed) % 100) - ((seedB * daySeed) % 100)
+      })
       .slice(0, 8)
       .map(s => s.track)
 
-    const result = withScore.length > 0
-      ? withScore
-      : JOCHA_TRACKS.filter(t => (playCounts[t.id] ?? 0) === 0).slice(0, 8)
+    return { recommended: unique, hasAnyPlay: anyPlay }
+  }, [playCounts, mounted])
 
-    return { recommended: result, hasAnyPlay: true }
-  }, [playCounts])
-
-  if (!hasAnyPlay) {
-    return (
-      <section className="mt-12 px-6 md:px-12">
-        <div className="flex justify-between items-baseline mb-8">
-          <h3 className="font-headline text-2xl font-bold tracking-tight">Recommandé pour toi</h3>
-        </div>
-        <div className="flex flex-col items-center justify-center py-12 gap-3 text-on-surface-variant bg-surface-container-low rounded-2xl">
-          <span className="material-symbols-outlined text-5xl opacity-30"
-            style={{ fontVariationSettings: "'FILL' 1" }}>
-            auto_awesome
-          </span>
-          <p className="font-body text-sm opacity-50 text-center max-w-xs">
-            Écoute des sons pour obtenir des recommandations
-          </p>
-        </div>
-      </section>
-    )
-  }
+  if (!mounted) return (
+    <section className="mt-16 px-6 md:px-12 animate-pulse">
+      <div className="h-8 w-48 bg-surface-container rounded-lg mb-8" />
+      <div className="flex gap-6 overflow-hidden">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="flex-none w-64 aspect-[4/5] bg-surface-container rounded-3xl" />
+        ))}
+      </div>
+    </section>
+  )
 
   return (
-    <section className="mt-12 px-6 md:px-12">
-      <div className="flex justify-between items-baseline mb-8">
-        <div className="flex items-center gap-3">
-          <h3 className="font-headline text-2xl font-bold tracking-tight">Recommandé pour toi</h3>
-          <span className="material-symbols-outlined text-primary text-xl"
-            style={{ fontVariationSettings: "'FILL' 1" }}>
-            auto_awesome
-          </span>
+    <section className="mt-20 px-6 md:px-12 relative overflow-hidden py-8">
+      {/* Background Glow */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+      
+      <div className="flex justify-between items-center mb-10 relative z-10">
+        <div className="flex flex-col gap-1">
+          <h3 className="font-headline text-3xl font-bold tracking-tighter text-on-surface">
+            {hasAnyPlay ? 'Recommandé pour toi' : 'Découvertes du jour'}
+          </h3>
+          <p className="font-label text-xs text-on-surface-variant/60 uppercase tracking-[0.2em]">
+            Sélectionné avec soin par l'algorithme Jocha
+          </p>
         </div>
+        
+        <button 
+          onClick={() => recommended.length > 0 && play(recommended[0], recommended)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-surface-container-high hover:bg-primary hover:text-on-primary rounded-full transition-all duration-300 group shadow-sm border border-outline-variant/20"
+        >
+          <span className="font-label text-xs font-bold uppercase tracking-widest">Tout lire</span>
+          <MaterialIcon name="play_arrow" filled className="text-lg group-hover:scale-110 transition-transform" />
+        </button>
       </div>
 
-      <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4 -mx-6 px-6">
+      <div className="flex gap-6 overflow-x-auto no-scrollbar pb-6 -mx-6 px-6 relative z-10">
         {recommended.map((track) => (
           <div
             key={track.id}
             className="flex-none w-56 md:w-64 group cursor-pointer"
             onClick={() => play(track, recommended)}
           >
-            <div className="aspect-square relative rounded-xl overflow-hidden bg-surface-container mb-4">
+            <div className="aspect-[4/5] relative rounded-3xl overflow-hidden bg-surface-container shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-primary/20">
               <Image
                 src={track.albumArt}
                 alt={track.title}
                 fill
-                className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                className="object-cover object-top transition-transform duration-1000 group-hover:scale-110"
                 unoptimized
               />
-              <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute bottom-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-xl">
-                  <MaterialIcon name="play_arrow" filled />
+              
+              {/* Glass Overlay on Hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+              
+              {/* Play Button Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100">
+                <div className="w-16 h-16 rounded-full bg-primary/90 backdrop-blur-md flex items-center justify-center text-on-primary shadow-2xl border border-white/20">
+                  <MaterialIcon name="play_arrow" filled className="text-3xl" />
                 </div>
               </div>
-              {(playCounts[track.id] ?? 0) > 0 && (
-                <div className="absolute top-3 left-3 px-2 py-0.5 bg-background/70 backdrop-blur-sm rounded-full font-label text-[10px] font-bold text-primary uppercase tracking-wider">
-                  {formatPlays(playCounts[track.id])} plays
+
+              {/* Stats Badge */}
+              <div className="absolute top-4 left-4 flex gap-2">
+                {(playCounts[track.id] ?? 0) > 0 && (
+                  <div className="px-2.5 py-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/10 font-label text-[10px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                    {formatPlays(playCounts[track.id])}
+                  </div>
+                )}
+                <div className="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 font-label text-[10px] font-bold text-white uppercase tracking-wider">
+                  {(track.genres ?? [])[0] || 'Rap'}
                 </div>
-              )}
+              </div>
+
+              {/* Bottom Info */}
+              <div className="absolute bottom-6 left-6 right-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                <h4 className="font-headline font-black text-xl text-white leading-tight mb-1 drop-shadow-lg">
+                  {track.title}
+                </h4>
+                <p className="font-label text-[10px] text-white/60 uppercase tracking-widest truncate">
+                  {track.albumTitle}
+                </p>
+              </div>
             </div>
-            <h4 className="font-headline font-bold text-on-surface group-hover:text-primary transition-colors truncate">
-              {track.title}
-            </h4>
-            <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest mt-1 truncate">
-              {(track.genres ?? []).slice(0, 2).join(' • ') || track.albumTitle}
-            </p>
           </div>
         ))}
       </div>
