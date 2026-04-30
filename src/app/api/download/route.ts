@@ -104,6 +104,7 @@ export async function GET(req: NextRequest) {
     const trackIdx = i + 1
     const prefix = String(trackIdx).padStart(2, '0')
     
+    if (!track.audioUrl) continue
     const originalFilename = decodeURIComponent(track.audioUrl.split('/').pop() || '')
     const newFilename = `${prefix} - ${originalFilename}`
     const audioPath = findFileRecursive(AUDIO_DIR, originalFilename)
@@ -122,9 +123,9 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
+  const zipBuffer = await zip.generateAsync({ type: 'uint8array' })
 
-  return new NextResponse(zipBuffer, {
+  return new NextResponse(zipBuffer as any, {
     headers: {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${downloadName}.zip"`,

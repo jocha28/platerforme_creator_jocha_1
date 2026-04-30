@@ -63,7 +63,14 @@ interface PlayerActions {
 
 const PlayerContext = createContext<(PlayerState & PlayerActions) | null>(null)
 
-export function PlayerProvider({ children }: { children: ReactNode }) {
+export interface PlayerInitData {
+  playCounts: Record<string, number>
+  recentTrackIds: string[]
+  weeklyTopTrackIds: string[]
+  weeklyTopReleaseIds: string[]
+}
+
+export function PlayerProvider({ children, initialData }: { children: ReactNode, initialData?: PlayerInitData }) {
   // 1. Initial State - Must match server exactly
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -74,10 +81,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [isShuffle, setIsShuffle] = useState(false)
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('off')
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
-  const [playCounts, setPlayCounts] = useState<Record<string, number>>({})
-  const [recentTrackIds, setRecentTrackIds] = useState<string[]>([])
-  const [weeklyTopTrackIds, setWeeklyTopTrackIds] = useState<string[]>([])
-  const [weeklyTopReleaseIds, setWeeklyTopReleaseIds] = useState<string[]>([])
+  const [playCounts, setPlayCounts] = useState<Record<string, number>>(initialData?.playCounts ?? {})
+  const [recentTrackIds, setRecentTrackIds] = useState<string[]>(initialData?.recentTrackIds ?? [])
+  const [weeklyTopTrackIds, setWeeklyTopTrackIds] = useState<string[]>(initialData?.weeklyTopTrackIds ?? [])
+  const [weeklyTopReleaseIds, setWeeklyTopReleaseIds] = useState<string[]>(initialData?.weeklyTopReleaseIds ?? [])
   const [crossfade, setCrossfade] = useState(true)
   const [crossfadeDuration, setCrossfadeDuration] = useState(5)
 

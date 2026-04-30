@@ -16,11 +16,23 @@ export default function WeeklyTopSection() {
   }, [])
 
   const topTracks = useMemo(() => {
-    if (!mounted) return []
     return weeklyTopTrackIds
       .map(id => JOCHA_TRACKS.find(t => t.id === id))
       .filter(Boolean) as typeof JOCHA_TRACKS
-  }, [weeklyTopTrackIds, mounted])
+  }, [weeklyTopTrackIds])
+
+  if (!mounted && topTracks.length === 0) {
+    return (
+      <section className="mt-24 px-6 md:px-12 animate-pulse">
+        <div className="h-10 w-64 bg-surface-container rounded-lg mb-8" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="h-24 bg-surface-container rounded-3xl" />
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   if (topTracks.length === 0) return null
 

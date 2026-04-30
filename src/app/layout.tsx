@@ -36,7 +36,11 @@ export const metadata: Metadata = {
   themeColor: '#E8B800',
 }
 
+import { getInitialDataServer } from '@/lib/get-initial-data'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const initialData = getInitialDataServer()
+
   return (
     <html lang="fr" className={`dark ${epilogue.variable} ${manrope.variable}`}>
       <head>
@@ -58,8 +62,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-background text-on-background font-body antialiased selection:bg-primary/30 overflow-x-hidden">
         <ServiceWorkerRegistrar />
         <AdminProvider>
-          <ArtistProvider>
-            <PlayerProvider>
+          <ArtistProvider initialProfile={initialData.profile}>
+            <PlayerProvider initialData={initialData}>
               <PlaylistProvider>
                 <PanelProvider>
                   <AppShell>

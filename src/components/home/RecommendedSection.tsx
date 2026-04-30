@@ -16,12 +16,14 @@ export default function RecommendedSection() {
   }, [])
 
   const { recommended, hasAnyPlay } = useMemo(() => {
-    if (!mounted) return { recommended: [], hasAnyPlay: false }
-
     const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24))
     const counts = playCounts || {}
     const entries = Object.entries(counts)
     const anyPlay = entries.some(([, count]) => count > 0)
+    
+    // If no play counts yet (first load or no data), use some defaults or random
+    const tracksToProcess = JOCHA_TRACKS.length > 0 ? JOCHA_TRACKS : []
+    if (tracksToProcess.length === 0) return { recommended: [], hasAnyPlay: false }
 
     // 1. Genre Affinity Scoring
     const genreScores: Record<string, number> = {}

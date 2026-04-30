@@ -6,7 +6,7 @@ import TemplateRenderer from './TemplateRenderer'
 
 interface Props {
   state: StudioState
-  previewRef: React.RefObject<HTMLDivElement>
+  previewRef: React.RefObject<HTMLDivElement | null>
 }
 
 export default function SmartphonePreview({ state, previewRef }: Props) {

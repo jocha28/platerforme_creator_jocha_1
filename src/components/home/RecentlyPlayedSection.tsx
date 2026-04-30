@@ -15,11 +15,23 @@ export default function RecentlyPlayedSection() {
   }, [])
 
   const recentTracks = useMemo(() => {
-    if (!mounted) return []
     return recentTrackIds
       .map(id => JOCHA_TRACKS.find(t => t.id === id))
       .filter(Boolean) as typeof JOCHA_TRACKS
-  }, [recentTrackIds, mounted])
+  }, [recentTrackIds])
+
+  if (!mounted && recentTracks.length === 0) {
+    return (
+      <section className="mt-20 px-6 md:px-12 animate-pulse">
+        <div className="h-6 w-48 bg-surface-container rounded-lg mb-8" />
+        <div className="flex gap-6 overflow-hidden">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="flex-none w-32 md:w-40 aspect-square bg-surface-container rounded-2xl" />
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   if (recentTracks.length === 0) return null
 

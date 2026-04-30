@@ -24,10 +24,10 @@ const DEFAULT_PROFILE: ArtistProfile = {
 
 const ArtistContext = createContext<ArtistContextValue | null>(null)
 
-export function ArtistProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useState<ArtistProfile>(DEFAULT_PROFILE)
+export function ArtistProvider({ children, initialProfile }: { children: ReactNode, initialProfile?: ArtistProfile }) {
+  const [profile, setProfile] = useState<ArtistProfile>(initialProfile ?? DEFAULT_PROFILE)
 
-  // Charger le profil via le cache init partagé (un seul appel HTTP)
+  // Charger le profil via le cache init partagé (un seul appel HTTP) - Background Refresh
   useEffect(() => {
     getInitData().then(({ profile }) => { if (profile) setProfile(profile) })
   }, [])
