@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createReadStream, statSync, existsSync } from 'fs'
+import { createReadStream, statSync, existsSync, readdirSync } from 'fs'
 import { join } from 'path'
+
+import { findFileRecursive } from '@/lib/audio-discovery'
 
 export const runtime = 'nodejs'
 
 const AUDIO_DIR = process.env.AUDIO_DIR ?? join(process.cwd(), 'public', 'music')
+
 
 export async function GET(
   req: NextRequest,
@@ -14,13 +17,14 @@ export async function GET(
   const filename = decodeURIComponent(raw)
 
   // Sécurité : bloquer les path traversal
-  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+  if (filename.includes('..')) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
-  const filePath = join(AUDIO_DIR, filename)
+  const filePath = findFileRecursive(AUDIO_DIR, filename)
 
-  if (!existsSync(filePath)) {
+  if (!filePath || !existsSync(filePath)) {
+    console.error(`Audio file not found: ${filename} (searched in ${AUDIO_DIR})`)
     return new NextResponse('Not Found', { status: 404 })
   }
 

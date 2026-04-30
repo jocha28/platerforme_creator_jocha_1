@@ -4,6 +4,8 @@ export interface InitData {
   playCounts: Record<string, number>
   profile: ArtistProfile
   playlists: Playlist[]
+  recentTrackIds: string[]
+  weeklyTopTrackIds: string[]
 }
 
 // Promise partagée — un seul appel HTTP pour toute l'app
@@ -13,8 +15,8 @@ export function getInitData(): Promise<InitData> {
   if (!promise) {
     promise = fetch('/api/init')
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => data ?? { playCounts: {}, profile: null, playlists: [] })
-      .catch(() => ({ playCounts: {}, profile: null, playlists: [] }))
+      .then((data) => data ?? { playCounts: {}, profile: null, playlists: [], recentTrackIds: [], weeklyTopTrackIds: [] })
+      .catch(() => ({ playCounts: {}, profile: null, playlists: [], recentTrackIds: [], weeklyTopTrackIds: [] }))
   }
   return promise
 }

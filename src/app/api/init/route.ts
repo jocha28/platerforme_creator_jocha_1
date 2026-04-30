@@ -19,11 +19,34 @@ const DEFAULT_PROFILE: ArtistProfile = {
 
 export function GET() {
   const playCounts = readStore<Record<string, number>>('play-counts.json', {})
+  const history = readStore<{ trackId: string, timestamp: number }[]>('play-history.json', [])
+  
+  // Récemment joués : les 20 derniers IDs uniques
+  const recentTrackIds = Array.from(new Set(history.map(h => h.trackId).reverse())).slice(0, 20)
+  
+  // Top de la semaine : écoutes des 7 derniers jours
+  const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  const weeklyPlays = history.filter(h => h.timestamp > oneWeekAgo)
+  const weeklyCounts: Record<string, number> = {}
+  weeklyPlays.forEach(h => {
+    weeklyCounts[h.trackId] = (weeklyCounts[h.trackId] ?? 0) + 1
+  })
+  const weeklyTopTrackIds = Object.entries(weeklyCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([tid]) => tid)
+
   const profile    = readStore<ArtistProfile>('profile.json', DEFAULT_PROFILE)
   const playlists  = getPlaylists()
 
   return NextResponse.json(
-    { playCounts, profile, playlists },
+    { 
+      playCounts, 
+      profile, 
+      playlists,
+      recentTrackIds,
+      weeklyTopTrackIds
+    },
     { headers: { 'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30' } }
   )
 }

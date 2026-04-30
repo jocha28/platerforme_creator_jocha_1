@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePlayer } from '@/context/PlayerContext'
 import { JOCHA_TRACKS } from '@/data/tracks'
+import { MOCK_RELEASES } from '@/data/releases'
 import { getSingleCertification, formatPlays, formatDuration } from '@/lib/utils'
 import CertificationDisc from '@/components/ui/CertificationDisc'
 import MaterialIcon from '@/components/ui/MaterialIcon'
@@ -205,7 +206,7 @@ export default function CertificationsPage() {
 
                 {/* Cover album */}
                 <Link
-                  href={`/album/${track.albumId}`}
+                  href={`/album/${MOCK_RELEASES.find(r => track.albumId === 'singles' ? r.id === track.id : r.id === track.albumId)?.slug || (track.albumId === 'singles' ? '' : track.albumId)}`}
                   onClick={(e) => e.stopPropagation()}
                   className="relative h-12 w-12 md:h-14 md:w-14 rounded-lg overflow-hidden shrink-0 shadow-lg hover:shadow-xl transition-shadow"
                 >

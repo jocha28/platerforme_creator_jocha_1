@@ -13,7 +13,7 @@ export default function HeroSection() {
   const { play } = usePlayer()
 
   const tracks = JOCHA_TRACKS
-    .filter((t) => t.albumId === featured.id)
+    .filter((t) => featured.type === 'single' ? t.id === featured.id : t.albumId === featured.id)
     .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
 
   function handlePlay() {
@@ -142,7 +142,9 @@ export default function HeroSection() {
 
           {tracks.length > 0 && (
             <div className="border-t border-outline-variant/10 pt-6 space-y-1 max-w-sm">
-              <p className="font-label text-[9px] uppercase tracking-[0.3em] text-on-surface-variant/40 mb-3 px-3">Sur cet EP</p>
+              <p className="font-label text-[9px] uppercase tracking-[0.3em] text-on-surface-variant/40 mb-3 px-3">
+                Sur cet {featured.type === 'album' ? 'Album' : 'EP'}
+              </p>
               {tracks.slice(0, 3).map((t, i) => (
                 <button
                   key={t.id}

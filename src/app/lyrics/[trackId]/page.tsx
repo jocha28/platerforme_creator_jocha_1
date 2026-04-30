@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { JOCHA_TRACKS } from '@/data/tracks'
+import { MOCK_RELEASES } from '@/data/releases'
 import { getLyrics, getCurrentLineIndex } from '@/data/lyrics'
 import { usePlayer } from '@/context/PlayerContext'
 import { useAdmin } from '@/context/AdminContext'
@@ -200,7 +201,7 @@ export default function LyricsPage() {
 
         <div className="relative z-10 flex items-end gap-6 md:gap-10 px-6 md:px-12 pt-8 pb-8 max-w-6xl mx-auto w-full">
           {/* Cover */}
-          <Link href={`/album/${track.albumId}`} className="shrink-0 group hidden sm:block">
+          <Link href={`/album/${MOCK_RELEASES.find(r => track.albumId === 'singles' ? r.id === track.id : r.id === track.albumId)?.slug || (track.albumId === 'singles' ? '' : track.albumId)}`} className="shrink-0 group hidden sm:block">
             <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 group-hover:shadow-primary/20 transition-shadow">
               <Image src={track.albumArt} alt={track.albumTitle} width={144} height={144} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
             </div>
@@ -217,7 +218,7 @@ export default function LyricsPage() {
               {track.title}
             </h1>
             <div className="flex flex-wrap items-center gap-3 mt-2 mb-4">
-              <Link href={`/album/${track.albumId}`} className="font-label text-sm text-on-surface-variant hover:text-primary transition-colors">
+              <Link href={`/album/${MOCK_RELEASES.find(r => track.albumId === 'singles' ? r.id === track.id : r.id === track.albumId)?.slug || (track.albumId === 'singles' ? '' : track.albumId)}`} className="font-label text-sm text-on-surface-variant hover:text-primary transition-colors">
                 {track.albumTitle}
               </Link>
               <span className="text-on-surface-variant/30">·</span>

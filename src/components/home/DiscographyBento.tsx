@@ -18,7 +18,7 @@ export default function DiscographyBento() {
 
   function onPlay(r: Release) {
     const tracks = JOCHA_TRACKS
-      .filter((t) => t.albumId === r.id)
+      .filter((t) => r.type === 'single' ? t.id === r.id : t.albumId === r.id)
       .sort((a, b) => (a.trackNumber ?? 0) - (b.trackNumber ?? 0))
     if (tracks.length > 0) play(tracks[0], tracks)
   }

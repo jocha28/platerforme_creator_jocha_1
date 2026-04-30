@@ -1,5 +1,7 @@
 import HeroSection from '@/components/home/HeroSection'
 import TrendingCarousel from '@/components/home/TrendingCarousel'
+import RecentlyPlayedSection from '@/components/home/RecentlyPlayedSection'
+import WeeklyTopSection from '@/components/home/WeeklyTopSection'
 import DailyMixSection from '@/components/home/DailyMixSection'
 import CataloguePlaylistsSection from '@/components/home/CataloguePlaylistsSection'
 import RecommendedSection from '@/components/home/RecommendedSection'
@@ -10,6 +12,8 @@ export default function HomePage() {
     <div className="pt-16">
       <HeroSection />
       <TrendingCarousel />
+      <RecentlyPlayedSection />
+      <WeeklyTopSection />
       <DailyMixSection />
       <CataloguePlaylistsSection />
       <RecommendedSection />
@@ -18,3 +22,4 @@ export default function HomePage() {
     </div>
   )
 }
+

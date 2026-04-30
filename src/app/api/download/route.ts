@@ -5,6 +5,7 @@ import JSZip from 'jszip'
 import { JOCHA_TRACKS } from '@/data/tracks'
 import { JOCHA_LYRICS, LyricLine } from '../../../data/lyrics'
 import { getPlaylists } from '@/app/api/playlists/route'
+import { findFileRecursive } from '@/lib/audio-discovery'
 
 export const runtime = 'nodejs'
 
@@ -105,9 +106,9 @@ export async function GET(req: NextRequest) {
     
     const originalFilename = decodeURIComponent(track.audioUrl.split('/').pop() || '')
     const newFilename = `${prefix} - ${originalFilename}`
-    const audioPath = join(AUDIO_DIR, originalFilename)
+    const audioPath = findFileRecursive(AUDIO_DIR, originalFilename)
 
-    if (existsSync(audioPath)) {
+    if (audioPath && existsSync(audioPath)) {
       const audioData = readFileSync(audioPath)
       folder?.file(newFilename, audioData)
 
