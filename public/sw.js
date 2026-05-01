@@ -1,20 +1,16 @@
-const CACHE_NAME = 'jocha-v1'
+const CACHE_NAME = 'jocha-pwa-v2'
 const STATIC_ASSETS = [
   '/',
-  '/profile',
-  '/library',
-  '/search',
   '/manifest.json',
   '/icon.svg',
+  '/favicon.ico',
 ]
 
 // Install: pre-cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Silent fail — certains assets peuvent ne pas exister encore
-      })
+      return cache.addAll(STATIC_ASSETS).catch(err => console.log('Pre-cache error:', err))
     })
   )
   self.skipWaiting()
@@ -34,48 +30,89 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch: network first, fallback to cache
+// Fetch handler
 self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Ne pas intercepter les API routes et les fichiers audio
-  if (
-    url.pathname.startsWith('/api/') ||
-    url.pathname.startsWith('/music/') ||
-    request.method !== 'GET'
-  ) {
+  // 1. Audio handling (Range requests)
+  if (url.pathname.startsWith('/music/')) {
+    event.respondWith(handleAudioRequest(request))
     return
   }
 
-  // Pour les covers (images) : cache first
-  if (url.pathname.startsWith('/covers/')) {
+  // 2. API Init handling (Network First, then Cache)
+  if (url.pathname === '/api/init') {
     event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cached = await cache.match(request)
-        if (cached) return cached
-        try {
-          const response = await fetch(request)
-          if (response.ok) cache.put(request, response.clone())
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone))
+          }
           return response
-        } catch {
-          return new Response('', { status: 408 })
-        }
+        })
+        .catch(() => caches.match(request))
+    )
+    return
+  }
+
+  // 3. Static Assets (Next.js chunks, images, etc.) - Cache First
+  if (
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/covers/') ||
+    url.pathname.startsWith('/fonts/') ||
+    STATIC_ASSETS.includes(url.pathname)
+  ) {
+    event.respondWith(
+      caches.match(request).then(cached => {
+        return cached || fetch(request).then(response => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone))
+          }
+          return response
+        })
       })
     )
     return
   }
 
-  // Pour tout le reste : network first, fallback cache
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-        }
-        return response
-      })
-      .catch(() => caches.match(request))
-  )
+  // 4. Default: Network First, Fallback to Cache (for pages)
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then(cache => cache.put(request, clone))
+          }
+          return response
+        })
+        .catch(() => caches.match('/')) // Fallback to index if offline
+    )
+    return
+  }
 })
+
+// Helper for Range requests (Audio)
+async function handleAudioRequest(request) {
+  const cache = await caches.open(CACHE_NAME)
+  const cachedResponse = await cache.match(request)
+
+  if (cachedResponse) {
+    return cachedResponse
+  }
+
+  try {
+    const networkResponse = await fetch(request)
+    if (networkResponse.status === 200) {
+      // On ne met en cache que si c'est une réponse complète (200)
+      // Fly.io peut envoyer du 206 (Partial Content), on évite de casser le cache avec ça
+      cache.put(request, networkResponse.clone())
+    }
+    return networkResponse
+  } catch (err) {
+    return new Response('Offline: Audio not cached', { status: 503 })
+  }
+}
